@@ -5,11 +5,11 @@
 This django app can be used as a [Cartoview](https://github.com/cartologic/cartoview) app or you can use it in any django project.
 
 to use with cartoview 
-1. Download the app package form [here](http://cartologic.com/cartoview2/apps/)
-2. in your [cartoview](github.com/cartologic/cartoview) installation, login as admin
-3. go to "Apps" then "Manage Apps" then "Install new app"
-4. upload the downloaded package and click install
-5. wait untill the installation finish
+- 1. Download the app package form [here](http://cartologic.com/cartoview2/apps/)
+- 2. in your [cartoview](github.com/cartologic/cartoview) installation, login as admin
+- 3. go to "Apps" then "Manage Apps" then "Install new app"
+- 4. upload the downloaded package and click install
+- 5. wait untill the installation finish
 
 to use in normal django project
 
