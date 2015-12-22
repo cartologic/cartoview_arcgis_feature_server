@@ -1,0 +1,71 @@
+<div class="panel panel-default" ng-if="showAdd">
+  <div class="panel-heading">
+      {$ selectedItem.id ? ("Edit " + selectedItem.title + " - " + selectedItem.id) : "Add New"  $}
+  </div>
+  <div class="panel-body">
+    
+    <div ng-if="addOperation.step == 1">
+      <div ng-show="uploader.isHTML5">
+        <!-- Example: nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
+        <div nv-file-drop="" uploader="uploader">
+            <div nv-file-over="" uploader="uploader" over-class="another-file-over-class" class="well my-drop-zone">
+                Drop your shapefile here
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+      <input class="form-control" type="file" nv-file-select="" uploader="uploader" />
+    </div>
+    <!--     <div class="form-group">
+      <input class="form-control" id="title" name="title" ng-model="selectedItem.title" placeholder="Title">
+    </div> -->
+       <div class="col-md-9" style="margin-bottom: 40px">
+          <div>
+              <div ng-if="uploader.isUploading">
+                  <div class="progress" style="">
+                      <div class="progress-bar" role="progressbar" ng-style="{ 'width': uploader.progress + '%' }"></div>
+                  </div>
+              </div>
+              <button type="button" class="btn btn-success btn-s" ng-click="uploader.uploadAll()" ng-disabled="!uploader.getNotUploadedItems().length">
+                  <span class="glyphicon glyphicon-upload"></span> Upload
+              </button>
+              <button type="button" class="btn btn-warning btn-s" ng-click="uploader.cancelAll()" ng-disabled="!uploader.isUploading">
+                  <span class="glyphicon glyphicon-ban-circle"></span> Cancel
+              </button>
+              
+          </div>
+      </div>
+    </div>
+    <div ng-if="addOperation.step == 2">
+        <!-- <pre>{$ tableProperties $}</pre> -->
+        <!-- <div class="form-group">
+            <label for="txtTableName">Table Name</label>
+            <input id="txtTableName" class="form-control" ng-model="tableProperties.name" placeholder="Table Name">
+        </div> -->
+        <div class="form-group">
+            <label for="txtTitle">Title</label>
+            <input id="txtTitle" class="form-control" ng-model="tableProperties.title" placeholder="Title">
+        </div>
+        <div class="form-group">
+            <label for="txtDescription">Table Name</label>
+            <textarea id="txtDescription" class="form-control" ng-model="tableProperties.description" placeholder="Description">
+              
+            </textarea> 
+        </div>
+        <div class="form-group">
+            <label for="txtGeomType">Geometry Type</label>
+            <input id="txtGeomType" class="form-control" ng-model="tableProperties.type"  ng-disabled="tableProperties.type!=null">
+        </div>
+        <div class="form-group">
+            <label for="txtSRID">Spatial Reference</label>
+            <input id="txtSRID" class="form-control" ng-model="tableProperties.srid"  ng-disabled="tableProperties.srid!=null">
+        </div>
+
+
+        <div class="pull-right">
+            <a class="btn btn-default btn-xs" ng-click="saveNew()">Save</a>
+            <a class="btn btn-default btn-xs" ng-click="cancelAdd()">Cancel</a>
+        </div>
+    </div>
+  </div>
+</div>

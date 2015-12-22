@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[]>
+<Map srs="{{service.proj4text}}" 
+ buffer-size="128"
+  {% if service.background_color %}background-color="{{service.background_color}}"{% endif %}
+>
+<FontSet name="fontset-0">
+  <Font face-name="Ubuntu Regular"/>
+  <Font face-name="Arial Regular"/>
+  <Font face-name="DejaVu Sans Book"/>
+</FontSet>
+{% for layer in service.layers.all %}
+<Style name="{{layer.slug}}" filter-mode="first" >
+  {{layer.style|safe}}
+</Style>
+<Layer name="{{layer.slug}}" srs="{{layer.proj4text}}">
+    <StyleName>{{layer.slug}}</StyleName>
+    <Datasource>
+        <Parameter name="table"><![CDATA[{{layer.table_name}}]]></Parameter>
+        <Parameter name="key_field"><![CDATA[{{layer.id_field_name}}]]></Parameter>
+        <Parameter name="geometry_field"><![CDATA[{{layer.geometry_field_name}}]]></Parameter>
+        <Parameter name="extent_cache"><![CDATA[auto]]></Parameter>
+        <Parameter name="extent"><![CDATA[{{layer.extent}}]]></Parameter>
+        <Parameter name="type"><![CDATA[postgis]]></Parameter>
+        <Parameter name="host"><![CDATA[{{layer.db.HOST}}]]></Parameter>
+        <Parameter name="port"><![CDATA[{{layer.db.PORT}}]]></Parameter>
+        <Parameter name="user"><![CDATA[{{layer.db.USER}}]]></Parameter>
+        <Parameter name="password"><![CDATA[{{layer.db.PASSWORD}}]]></Parameter>
+        <Parameter name="dbname"><![CDATA[{{layer.db.NAME}}]]></Parameter>
+    </Datasource>
+  </Layer>
+{% endfor %}
+</Map>

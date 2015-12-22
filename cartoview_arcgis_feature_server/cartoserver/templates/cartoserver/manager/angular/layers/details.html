@@ -1,0 +1,33 @@
+<div class="panel panel-info" ng-if="showDetails">
+  <div class="panel-heading">
+      <strong>{$ selectedItem.name $}</strong>
+      
+  </div>
+  <div class="panel-body" style="padding:0px">
+    <table class="table table-condensed">
+      <tr><th>Name</th><td>{$ selectedItem.name $}</td></tr>
+      <tr><th>Description</th><td>{$ selectedItem.description $}</td></tr>
+      <tr><th>Database Table Name</th><td>{$ selectedItem.table_name $}</td></tr>
+      <tr><th>Geometry Type</th><td>{$ selectedItem.geometry_type $}</td></tr>
+      <tr><th>Spatial Reference</th><td>{$ selectedItem.srid $}</td></tr>
+      <tr><th>Number of Features</th><td>{$ selectedItem.num_features $}</td></tr>
+      <tr>
+        <th>Geo Table</th>
+        <td>
+          <a href=""  ui-sref="tables.detail({ tableId: selectedItem.geo_table.id })">{$selectedItem.geo_table.title$}</a>
+        </td>
+      </tr>
+    </table>
+
+<!--     <pre>{$ selectedItem $}</pre>
+ -->  
+  </div>
+  <div class="panel-footer">
+   <a class="btn btn-primary btn-sm" ng-click="edit(selectedItem)">
+      <i class="glyphicon glyphicon-pencil"></i> Edit
+    </a>
+    <a class="btn btn-danger btn-sm" ng-click="delete(selectedItem)">
+      <i class="glyphicon glyphicon-trash"></i> Delete
+    </a>
+  </div>
+</div>

@@ -1,0 +1,36 @@
+
+<form ng-submit="save()" >
+
+  <div class="panel panel-info">
+    <div class="panel-heading">
+        Edit Datastore
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+          <label>Database Name</label>
+          <input class="form-control" ng-model="item.NAME" placeholder="Database Name">
+      </div>
+      <div class="form-group">
+          <label>User</label>
+          <input  class="form-control" ng-model="item.USER" placeholder="User">
+      </div>
+      <div class="form-group">
+          <label>Password</label>
+          <input type="password" class="form-control" ng-model="item.PASSWORD" placeholder="Password">
+      </div>
+      <div class="form-group">
+          <label>Host Name or IP</label>
+          <input  class="form-control" ng-model="item.HOST" placeholder="Host Name">
+      </div>
+      <div class="form-group">
+          <label>Port</label>
+          <input  class="form-control" ng-model="item.PORT" placeholder="Port">
+      </div>  
+  </div> 
+    <div class="panel-footer">
+      <button type="submit" class="btn btn-primary ">Save</button>
+      <!-- <a  class="btn btn-danger" >Cancel</a> -->
+    </div>
+  </div>
+</form>
+

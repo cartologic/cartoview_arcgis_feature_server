@@ -1,0 +1,38 @@
+
+<form ng-submit="save()" ng-if="item.is_mine">
+
+  <div class="panel panel-info">
+    <div class="panel-heading">
+        Edit Geotable Info
+    </div>
+    <div class="panel-body">
+    	<div class="form-group">
+            <label for="txtTitle">Title</label>
+            <input id="txtTitle" class="form-control" ng-model="item.title" placeholder="Title">
+        </div>
+        <div class="form-group">
+            <label for="txtDescription">Description</label>
+            <textarea id="txtDescription" class="form-control" ng-model="item.description"></textarea> 
+        </div>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" ng-model="item.is_public"> Public
+          </label>
+          <p class="help-block">Check to make the data available for other users</p>
+        </div>
+ 	</div> 
+    <div class="panel-footer">
+      <button type="submit" class="btn btn-primary ">Save</button>
+      <!-- <a  class="btn btn-danger" >Cancel</a> -->
+    </div>
+  </div>
+</form>
+
+<div class="panel panel-danger" ng-if="item.is_mine != true">
+    <div class="panel-heading">
+        Edit Geotable info
+    </div>
+    <div class="panel-body">
+    You are not authorized to edit this item
+    </div>
+</div>

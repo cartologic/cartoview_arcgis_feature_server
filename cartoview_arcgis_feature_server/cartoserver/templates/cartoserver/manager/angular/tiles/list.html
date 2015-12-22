@@ -1,0 +1,35 @@
+
+<div class="panel-body table-responsive" style="padding:0px;">
+  <table ng-if="items.length" class="table table-striped table-condensed table-hover table-bordered">
+      <thead>
+          <tr>
+              <th><a href="" ng-click="reverse=!reverse;order('title', reverse)">Name</a></th>
+              <th><a href="" ng-click="reverse=!reverse;order('title', reverse)">Number of Layers</a></th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr ng-repeat="item in items" ng-class="{selected:item.id == selectedItem.id}" ng-click="selectItem(item,true)" ui-sref="tiles.details({itemId:item.id})">
+            <td>{$ item.name $}</td>
+            <td>{$ item.layers.length $}</td>
+          </tr>
+      </tbody>
+  </table>
+  <div ng-hide="items.length" style="padding:10px;">
+    <h4>
+      <a ui-sref="tiles.add">You have no tile services, add new!</a>
+    </h4>
+  </div>
+</div>
+<div class="panel-footer">
+  <a ui-sref="tiles.add" href="" class="btn btn-default btn-sm">
+    <i class="glyphicon glyphicon-plus-sign"></i>
+  </a>
+  <div class="pull-right" ng-if="itemsPerPage<items.meta.total_count" style=" margin-top: -20px;">
+    <pagination total-items="items.meta.total_count" ng-model="currentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false" items-per-page="itemsPerPage" ng-change="loadData(currentPage)"></pagination>
+  </div>
+</div>
+
+
+
+
+

@@ -1,0 +1,82 @@
+
+<form ng-submit="save()" >
+
+  <div class="panel panel-info">
+    <div class="panel-heading">
+        {$ $stateParams.itemId ? 'Edit' : 'Add New' $} Tile Service
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label>Name</label>
+        <input  class="form-control" placeholder="Tile Service Name" ng-model="item.name" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" rows="6" ng-model="item.description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Copyright Text</label>
+        <textarea class="form-control"rows="6" ng-model="item.copyright_text"></textarea>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-model="item.add_to_catalog"> Add to catalog
+        </label>
+        <p class="help-block">Check to add a resource to Cartoview Catalog Page. Unchecking will delete the existing resource</p>
+      </div>
+      <div class="form-group">
+        <label >Background color</label>
+        <input class="form-control" ng-model="item.background_color" colorpicker="hex" style="width:100px;" ng-style='{backgroundColor:item.background_color,color:invertColor(item.background_color)}'>
+        <p class="help-block">HTML color code for the background-color of the generated tiles (for instance #000000), Empty value means transparent background</p>
+      </div>
+      <div class="form-group">
+        <label>Layers</label>
+        <a href="" class="btn btn-sm btn-success" ng-click="addLayer()"><i class="glyphicon glyphicon-plus-sign"></i> Add Layer</a>
+      <a href="" class="btn btn-sm btn-default" ng-click="moveSelectedLayersUp()" tooltip="Move Selected Layers Up">
+        <i class="glyphicon glyphicon-chevron-up"></i>
+      </a>
+      <a href="" class="btn btn-sm btn-default" ng-click="moveSelectedLayersDown()" tooltip="Move Selected Layers Down">
+        <i class="glyphicon glyphicon-chevron-down"></i>
+      </a>
+      </div>
+      
+      <accordion close-others="true">
+        <div ng-repeat="layer in item.layers" class="ct-tiles-layer" >
+         <input type="checkbox" ng-model="layer.$temp.selected" class="ch-select-layer">
+         <accordion-group is-open="layer.$temp.isOpen">
+            
+            <accordion-heading>
+            {$ layer.name $}
+            <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': layer.$temp.isOpen, 'glyphicon-chevron-right': !layer.$temp.isOpen}"></i>
+            </accordion-heading>
+            <fieldset>
+              <div class="form-group">
+                <label>Name</label>
+                <input  class="form-control" placeholder="Feature Layer Name" ng-model="layer.name" required>
+              </div>
+              <div class="form-group">
+                <label>Datasource</label>
+                <select class="form-control" ng-model="layer.$temp.geotable" ng-options="item.title for item in geotables track by item.content_type_id" required></select>
+                <p class="help-block">Choose the datasource table.</p>
+              </div>
+              <div class="form-group">
+                <label>Style</label>
+                <textarea class="form-control" rows="6" ng-model="layer.style" required></textarea>
+              </div>
+              <div class="form-group">
+                <label>Filter</label>
+                <textarea class="form-control" rows="6" ng-model="layer.filter"></textarea>
+              </div>
+            </fieldset>
+        </accordion-group>
+        </div>
+      </accordion>
+  </div> 
+    <div class="panel-footer">
+      
+      <button type="submit" class="btn btn-primary ">Save</button>
+      <!-- <a  class="btn btn-danger" >Cancel</a> -->
+    </div>
+  </div>
+</form>
+

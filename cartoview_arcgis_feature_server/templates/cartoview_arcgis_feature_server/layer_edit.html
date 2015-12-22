@@ -1,0 +1,62 @@
+{% extends BASE_TPL %}
+{% load i18n %}
+{% load url from future %}
+
+{% block title %} Cartoserver Featurelayer - Edit{% endblock %}
+
+{% block body_class %}data{% endblock %}
+
+
+  {% block body %}
+      <h3>Cartoserver Featurelayer - Edit</h3>
+       <form method="post">{% csrf_token %}
+
+          <div class="panel panel-info">
+            <div class="panel-heading">
+                Edit Feature Layer
+            </div>
+            <div class="panel-body">
+                {% for field in form %}
+
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <p class="help-block">
+                            {% for error in  field.errors %}{{ error }}{% endfor %}
+                        </p>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <p class="help-block">{{ field.help_text | safe}}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="panel-footer">
+
+              <button type="submit" class="btn btn-primary ">Save</button>
+              <a href="" class="btn btn-danger " href="{% url LAYER_LIST_URL_NAME %}" >Cancel</a>
+            </div>
+          </div>
+        </form>
+  {% endblock body %}
+
+{% block extra_script %}
+    <script type="text/javascript" src="{{ STATIC_URL }}cartoserver/manager/codemirror/lib/codemirror.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}cartoserver/manager/codemirror/mode/javascript/javascript.js"></script>
+    <script type="text/javascript">
+    $(function(){
+        $("input,textarea").addClass("form-control");
+        $("input[type=checkbox]").removeClass("form-control");
+        var jsonEditor = CodeMirror.fromTextArea(document.getElementById('id_drawing_info'), {
+             mode: "javascript",
+             lineNumbers: true
+        });
+
+    })
+    </script>
+
+{% endblock extra_script %}
+{% block extra_head %}
+    <link href="{{ STATIC_URL }}cartoserver/manager/codemirror/lib/codemirror.css" rel="stylesheet"/>
+{% endblock extra_head %}

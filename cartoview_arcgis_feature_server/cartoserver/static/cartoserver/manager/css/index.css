@@ -1,0 +1,28 @@
+table tr.selected td{
+    background-color: #428bca!important;
+    color:#fff;
+
+}
+#ct-list table tr {
+            cursor:pointer;
+}
+.my-drop-zone { border: dotted 3px #ccc; }
+.nv-file-over { border: dotted 3px red; } /* Default class applied to drop zones on over */
+.another-file-over-class { border: dotted 3px green; }
+
+.ct-tiles-layer {
+    position:relative;
+    margin-bottom: 10px;
+}
+.ct-tiles-layer input.ch-select-layer {
+    position:absolute;
+    top:12px;
+    left: 10px
+}
+ .ct-tiles-layer .panel-title{
+    padding-left: 15px;
+ }
+.CodeMirror-scroll {
+    position: absolute !important;
+    width: 100%;
+}

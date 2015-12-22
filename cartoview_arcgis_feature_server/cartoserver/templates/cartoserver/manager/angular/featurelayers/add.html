@@ -1,0 +1,41 @@
+
+<form ng-submit="save()">
+
+  <div class="panel panel-info">
+    <div class="panel-heading">
+        Add New Feature Layer
+    </div>
+    <div class="panel-body">
+
+      <div class="form-group">
+        <label for="txt-name">Name</label>
+        <input  class="form-control" id="txt-name" placeholder="Feature Layer Name" name="name" ng-model="item.name" required>
+      </div>
+      <div class="form-group">
+        <label for="select-datasource">Datasource</label>
+        <select class="form-control"  id="select-datasource" name="geotable" ng-model="geotable" required ng-options="item.title for item in geotables track by item.id" ng-disabled="$state.is('featurelayers.publish')"></select>
+        <p class="help-block">Choose the datasource table.</p>
+      </div>
+      <div class="form-group">
+        <label for="txt-description">Description</label>
+        <textarea class="form-control" id="txt-description" name="description" rows="6" ng-model="item.description"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="txt-copyrightText">Copyright Text</label>
+        <textarea class="form-control" id="txt-copyrightText" name="copyrightText" rows="6" ng-model="item.copyrightText"></textarea>
+      </div>
+
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-model="item.add_to_catalog"> Add to catalog
+        </label>
+        <p class="help-block">Check to add a resource to Cartoview Catalog Page. Unchecking will delete the existing resource</p>
+      </div>
+    </div>
+    <div class="panel-footer">
+      
+      <button type="submit" class="btn btn-primary ">Save</button>
+      <a href="" class="btn btn-danger " >Cancel</a>
+    </div>
+  </div>
+</form>

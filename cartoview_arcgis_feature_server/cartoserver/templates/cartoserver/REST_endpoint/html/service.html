@@ -1,0 +1,106 @@
+{% extends REST_ENDPOINT_BASE_HTML_TPL %}
+
+{% block title %}{{service_name}} (FeatureServer){% endblock %}
+{% block title_h2 %}{{service_name}} (FeatureServer){% endblock %}
+{% block restBody %}
+
+<b>View In: </b>
+<a href="http://www.arcgis.com/home/webmap/viewer.html?url=//{{ request.get_host }}{% url SERVICE_INFO_URL_NAME service_name%}&amp;source=sd" target="_blank">ArcGIS.com Map</a>
+
+<!-- <br/><br/>
+<b>View Footprint In: </b>
+<a href="http://www.arcgis.com/home/webmap/viewer.html?featurecollection=//{{ request.get_host }}{% url SERVICE_INFO_URL_NAME service_name%}%3Ff%3Djson%26option%3Dfootprints&supportsProjection=true&supportsJSONP=true" target="_blank">ArcGIS.com Map</a>
+ -->
+
+<br/><br/>
+<b>Service Description: </b>{{json.description | safe}}<br/><br/>
+
+<b>Has Versioned Data: </b> {{json.hasVersionedData | safe}} <br/><br/>
+
+<b>MaxRecordCount: </b> {{json.maxRecordCount}}<br/><br/>
+
+<b>Supported Query Formats: </b> JSON, AMF<br/><br/>
+
+<b>Layers: </b>
+
+<ul>
+
+<li><a href="{% url LAYER_INFO_URL_NAME service_name%}">{{json.layers.0.name}}</a> (0)</li>
+
+</ul>
+
+<b>Description: </b> {{json.description | safe}}<br/><br/>
+
+<b>Copyright Text: </b> {{json.copyrightText | safe}}<br/> <br/>
+
+<b>Spatial Reference: </b>{{json.spatialReference.wkid}}&nbsp;&nbsp;({{json.spatialReference.latestWkid}})
+
+<br/>
+
+<br/><br/>
+
+<b>Initial Extent: </b>
+<ul>
+XMin: {{json.initialExtent.xmin}}<br/>
+YMin: {{json.initialExtent.ymin}}<br/>
+XMax: {{json.initialExtent.xmax}}<br/>
+YMax: {{json.initialExtent.ymax}}<br/>
+Spatial Reference: {{json.initialExtent.spatialReference.wkid}} &nbsp;({{json.initialExtent.spatialReference.latestWkid}})
+<br/> <br/>
+</ul>
+
+<b>Full Extent: </b>
+<ul>
+XMin: {{json.fullExtent.xmin}}<br/>
+YMin: {{json.fullExtent.ymin}}<br/>
+XMax: {{json.fullExtent.xmax}}<br/>
+YMax: {{json.fullExtent.ymax}}<br/>
+Spatial Reference: {{json.fullExtent.spatialReference.wkid}} &nbsp;({{json.fullExtent.spatialReference.latestWkid}})
+<br/> <br/>
+</ul>
+
+<b>Units: </b> {{json.units}} <br/><br/>
+
+<b>Document Info: </b>
+
+<ul>
+
+Title: <br/>
+
+Author: <br/>
+
+Comments: <br/>
+
+Subject: <br/>
+
+Category: <br/>
+
+Keywords: <br/>
+
+AntialiasingMode: null<br/>
+
+TextAntialiasingMode: null<br/>
+
+</ul>
+
+<b>Enable Z Defaults: </b> {{json.enableZDefaults|safe}} <br/><br/>
+
+<!-- <b>Child Resources</b>:
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/info">Info</a>
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/uploads">Uploads</a>
+
+<br/><br/>
+
+<b>Supported Operations</b>:
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/query">Query</a>
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/applyEdits">Apply Edits</a>
+
+</div>
+
+<br/><br/> -->
+
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends MANAGER_BASE_TPL %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="{{STATIC_URL}}{{APP_NAME}}/manager/css/index.css">
+<link  href="{{STATIC_URL}}{{APP_NAME}}/manager/angular-ui-notification/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
+<link  href="{{STATIC_URL}}{{APP_NAME}}/manager/angular-bootstrap-colorpicker/css/colorpicker.min.css" rel="stylesheet" type="text/css">
+<link  href="{{STATIC_URL}}{{APP_NAME}}/manager/angular-busy/angular-busy.min.css" rel="stylesheet" type="text/css">
+<link  href="{{STATIC_URL}}{{APP_NAME}}/manager/angular-busy/gh-fork-ribbon.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="{{STATIC_URL}}{{APP_NAME}}/manager/codemirror/lib/codemirror.css">
+<link href="{{STATIC_URL}}{{ APP_NAME }}/manager/leaflet-0.7.2/leaflet.css" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="container">
+<div class="row">
+	<div ng-app="cartoserverManagerApp">
+        <ul class="nav nav-pills">
+            <li ng-class="{ active: $state.includes('geotables') }"><a href='' ui-sref="geotables">Geo Tables</a></li>
+            <li ng-class="{ active: $state.includes('featurelayers') }"><a href='' ui-sref="featurelayers">Feature Layers</a></li>
+            <li ng-class="{ active: $state.includes('tiles') }"><a href='' ui-sref="tiles">Tiles</a></li>
+            <li ng-class="{ active: $state.includes('datastores') }"><a href='' ui-sref="datastores">Settings</a></li>
+            <!--<li ng-class="{ active: $state.includes('webmaps') }"><a href='' ui-sref="webmaps">Web Maps</a></li>
+            {% if user.is_superuser %}
+            
+            <li ng-class="{ active: $state.includes('settings') }"><a href='' ui-sref="settings">Settings</a></li>
+            {% endif %}
+            <li class="pull-right">
+                <a ng-href="http://cartologic.com/cartoview/apps/cartoserver/help/{$ $state.params.resource.toLowerCase() $}" target="_blank">
+                    <i class="glyphicon glyphicon-question-sign"></i> Help
+                </a>
+            </li>
+             <li class="pull-right" ng-if="$state.includes('webmaps')">
+                <a ng-href="http://cartologic.com/cartoview/apps/cartoserver/help/{$ $state.params.resource.toLowerCase() $}/#settings" target="_blank">
+                    <i class="glyphicon glyphicon-cog"></i> Settings
+                </a>
+            </li>-->
+            <!-- <li ng-class="{ active: $state.includes('settings') }"><a href='' ui-sref="settings">Settings</a></li> -->
+            <li class="pull-right" ng-if="$state.includes('featurelayers')">
+                <a href="{% url FOLDER_INFO_URL_NAME %}" target="_blank">
+                    <i class="glyphicon glyphicon-home"></i> Feature Services Home
+                </a>
+            </li> 
+        </ul>
+        <p></p>
+        
+        <div id="ct-list" class="panel panel-default" ui-view="list"></div>
+        <div ui-view="messages"></div>
+        <div ui-view="item"></div>
+    </div>
+</div>
+</div>
+{% endblock body %}
+
+{% block scripts %}
+<script>
+    var REST_URL = "{% url MANAGER_HOME_URL_NAME %}rest/v1/";
+    var STATIC_URL = "{{STATIC_URL}}{{APP_NAME}}/";
+    var ANGULAR_TEMPLATES_ROOT = "{% url MANAGER_HOME_URL_NAME %}angular/templates/";
+    var SAVE_NEW_URL = 'save_new/';
+    var UPLOAD_URL = 'upload/';
+    var GEOTABLE_RESOURCE_URL = REST_URL + "geotable/";
+    var FEATURELAYER_RESOURCE_URL = REST_URL + "featurelayer/";
+    var ITEMS_PER_PAGE = 10;
+    var MAX_PAGING_SIZE = 5;
+</script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/angular/angular.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/angular-resource/angular-resource.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/angular-ui-router/release/angular-ui-router.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/ui-bootstrap-tpls-0.12.1.min.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/angular-file-upload.min.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/angular-ui-notification/angular-ui-notification.min.js"></script>
+
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/ui-codemirror.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/leaflet-0.7.2/leaflet.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/angular-leaflet-directive/angular-leaflet-directive_dev_mapped.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/angular-busy/angular-busy.min.js"></script>
+
+
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/tasty-resource.js"></script>
+
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/codemirror/lib/codemirror.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/codemirror/mode/javascript/javascript.js"></script>
+   
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/app.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/utils-service.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/geotables.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/tiles.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/datastores.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/featurelayers.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/webmaps.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/services.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/controllers/list.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/controllers/details.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/controllers/add.js"></script>
+<script src="{{STATIC_URL}}{{APP_NAME}}/manager/js/controllers/edit.js"></script>
+{% endblock scripts %}

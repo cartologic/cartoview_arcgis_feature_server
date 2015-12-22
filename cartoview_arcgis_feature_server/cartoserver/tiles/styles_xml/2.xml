@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[]>
+<Map srs="" 
+ buffer-size="128"
+  
+>
+<FontSet name="fontset-0">
+  <Font face-name="Ubuntu Regular"/>
+  <Font face-name="Arial Regular"/>
+  <Font face-name="DejaVu Sans Book"/>
+</FontSet>
+
+</Map>

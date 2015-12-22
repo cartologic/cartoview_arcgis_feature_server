@@ -1,0 +1,40 @@
+<div class="panel panel-info" ng-if="showDetails">
+  <div class="panel-heading">
+      <strong>{$ selectedItem.title $}</strong>
+      
+  </div>
+  <div class="panel-body" style="padding:0px">
+    <table class="table table-condensed">
+      <tr><th>Title</th><td>{$ selectedItem.title $}</td></tr>
+      <tr><th>Description</th><td>{$ selectedItem.description $}</td></tr>
+      <tr><th>Database Table Name</th><td>{$ selectedItem.table_name $}</td></tr>
+      <tr><th>Geometry Type</th><td>{$ selectedItem.geometry_type $}</td></tr>
+      <tr><th>Spatial Reference</th><td>{$ selectedItem.srid $}</td></tr>
+      <tr><th>Number of Features</th><td>{$ selectedItem.num_features $}</td></tr>
+      <tr>
+        <th>Published Layers</th>
+        <td>
+          <div ng-repeat="layer in selectedItem.featureLayers">
+            <a href=""  ui-sref="layers.detail({ layerId: layer.id })">{$layer.name$}</a>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+<!--     <pre>{$ selectedItem $}</pre>
+ -->  
+  </div>
+  <div class="panel-footer">
+    
+    <a class="btn btn-primary btn-sm" ng-click="publishService('{% url PUBLISH_URL_NAME %}')">
+      Publish Feature Layer
+    </a>
+    <a class="btn btn-primary btn-sm" ng-click="publishService(selectedItem)">Download</a>
+    <a class="btn btn-primary btn-sm" ng-click="edit(selectedItem)">
+      <i class="glyphicon glyphicon-pencil"></i> Edit Info
+    </a>
+    <a class="btn btn-danger btn-sm" ng-click="delete(selectedItem)">
+      <i class="glyphicon glyphicon-trash"></i> Delete
+    </a>
+  </div>
+</div>

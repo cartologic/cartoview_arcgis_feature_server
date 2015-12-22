@@ -1,0 +1,12 @@
+{% extends "site_base.html" %}
+
+{% block body_outer %}
+    <div style="height: 20px;"></div>
+    <ul class="nav nav-pills">
+      <li role="presentation"><a href="{% url LAYER_LIST_URL_NAME %}">Feature Layers</a></li>
+      <li role="presentation"><a href="{% url 'cartoserver_folder_info' %}">ArcGIS Server REST</a></li>
+    </ul>
+  {% block body %}
+  {% endblock body %}
+  {% block sidebar %}{% endblock sidebar %}
+{% endblock body_outer %}

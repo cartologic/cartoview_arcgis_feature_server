@@ -1,0 +1,115 @@
+{% extends REST_ENDPOINT_BASE_HTML_TPL %}
+
+{% block title %}{{json.name}} (ID:0){% endblock %}
+{% block title_h2 %}{{json.name}} (ID:0){% endblock %}
+{% block restBody %}
+
+<b>View In: </b>
+<a href="http://www.arcgis.com/home/webmap/viewer.html?url=//{{ request.get_host }}{% url LAYER_INFO_URL_NAME service_name%}&amp;source=sd" target="_blank">ArcGIS.com Map</a>
+<br/><br/>
+
+<b>Name:</b> {{json.name}} <br/><br/>
+
+<b>Display Field:</b> {{json.displayFieldName | safe}} <br/><br/>
+
+<b>Type: </b> Feature Layer <br/><br/>
+
+<b>Geometry Type:</b> {{json.geometryType}} <br/><br/>
+
+<b>Description: </b> {{json.description}}<br/><br/>
+
+<b>Definition Expression: </b> N/A <br/><br/>
+
+<b>Copyright Text: </b> {{json.copyrightText}}<br/><br/>
+
+<b>Default Visibility: </b> {{json.defaultVisibility}}<br/><br/>
+
+<b>MaxRecordCount: </b> {{json.maxRecordCount}}<br/><br/>
+
+<b>Supported Query Formats: </b> {{json.supportedQueryFormats}}<br/><br/>
+
+<b>Min Scale: </b> {{json.minScale}}<br/><br/>
+
+<b>Max Scale: </b> {{json.maxScale}}<br/><br/>
+
+<b>Supports Advanced Queries: </b> {{json.supportsAdvancedQueries}}<br/><br/>
+
+<b>Supports Statistics: </b> {{json.supportsStatistics}}<br/><br/>
+
+<b>Use Standardized Queries: </b> true<br/><br/>
+
+<b>Extent:</b>
+
+<ul>
+XMin: {{json.extent.xmin}}<br/>
+YMin: {{json.extent.ymin}}<br/>
+XMax: {{json.extent.xmax}}<br/>
+YMax: {{json.extent.ymax}}<br/>
+Spatial Reference: {{json.extent.spatialReference.wkid}} &nbsp;({{json.extent.spatialReference.latestWkid}})
+<br/> <br/>
+</ul>
+
+
+<br/>
+
+<b>Drawing Info: </b> {{json.drawingInfo.json}}<br/><br/>
+
+<b>HasZ: {{json.hasZ}} </b><br/><br/>
+
+<b>HasM: {{json.hasM}} </b> <br/><br/>
+
+<b>Has Attachments: </b> {{json.hasAttachements}} <br/><br/>
+
+<b>HTML Popup Type: </b> {{json.htmlPopupType}} <br/><br/>
+
+<b>Type ID Field: </b> {{json.typeIdField}}<br/><br/>
+
+<b>Fields: </b>
+
+<ul>
+{% for f in json.fields %}
+<li>
+{{f.name}}
+<i>
+(
+type: {{f.type}},
+alias: {{f.alias}},
+editable: {{f.editable}},
+nullable: {{f.nullable}}
+)
+
+</i>
+
+</li>
+
+{% endfor %}
+</ul>
+<br/>
+
+<b>Capabilities: </b> {{json.capabilities}}<br/><br/>
+
+<b>Sync Can Return Changes: </b> {{json.syncCanReturnChanges}}<br/><br/>
+
+<b>Is Data Versioned: </b> {{json.isDataVersioned}}<br/><br/>
+
+<b>Supports Rollback On Failure: </b> {{json.supportsRollbackOnFailure}}<br/><br/>
+
+<b>Supported Operations</b>:
+
+&nbsp;&nbsp;<a href="{% url LAYER_QUERY_URL_NAME service_name %}">Query</a>
+
+<!-- &nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/0/applyEdits">Apply Edits</a>
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/0/addFeatures">Add Features</a>
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/0/updateFeatures">Update Features</a>
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/0/deleteFeatures">Delete Features</a>
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/0/generateRenderer">Generate Renderer</a>
+
+&nbsp;&nbsp;<a href="/arcgis/rest/services/flex2/ADA/FeatureServer/0?f=pjson&returnUpdates=true&">Return Updates</a><br/><br/>
+ -->
+<br/><br/>
+
+{% endblock %}

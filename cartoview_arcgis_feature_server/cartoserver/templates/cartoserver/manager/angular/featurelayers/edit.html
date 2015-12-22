@@ -1,0 +1,71 @@
+
+<form ng-submit="save()">
+
+  <div class="panel panel-info">
+    <div class="panel-heading">
+        Edit Feature Layer
+    </div>
+    <div class="panel-body">
+
+      <div class="form-group">
+        <label for="txt-name">Name</label>
+        <input  class="form-control" id="txt-name" placeholder="Feature Layer Name" name="name" ng-model="item.name" required>
+      </div>
+      <div class="form-group">
+        <label for="select-datasource">Datasource</label>
+        <input  class="form-control" id="txt-datastore" ng-model="item.geo_table.title" disabled="">
+      </div>
+      <div class="form-group">
+        <label for="txt-description">Description</label>
+        <textarea class="form-control" id="txt-description" name="description" rows="6" ng-model="item.description"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="txt-copyrightText">Copyright Text</label>
+        <textarea class="form-control" id="txt-copyrightText" name="copyrightText" rows="6" ng-model="item.copyright_text"></textarea>
+      </div>
+
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-model="item.add_to_catalog"> Add to catalog
+        </label>
+        <p class="help-block">Check to add a resource to Cartoview Catalog Page. Unchecking will delete the existing resource</p>
+      </div>
+      <div class="form-group">
+        <label for="txt-max_records">Maximum Number of Records Returned</label>
+        <input type="number" class="form-control" id="txt-max_records"  name="max_records" ng-model="item.max_records" required>
+        <p class="help-block">The maximum number of results that can be returned at once from query, identify and find operations.</p>
+      </div>
+      <div class="form-group">
+        <label for="txt-included_fields_names">Included Fields</label>
+        <input class="form-control" id="txt-included_fields_names"  name="included_fields_names" ng-model="item.included_fields_names" required>
+        <p class="help-block">The datasource fields that will be included in the generated layer fields.
+                    this must be comma separated string.<br>Example: field_1,field_2<br>* means all fields.</p>
+      </div>
+
+      <div class="form-group">
+        <label >Drawing Info</label>
+        <div  ng-model="item.drawing_info" ui-codemirror="{lineNumbers: true, mode: 'javascript'}"></div>
+       
+
+        <p class="help-block">A JSON renderer object as returned by the ArcGIS REST API. You can find more info <a target="_blank" href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r30000019t000000">here</a></p>
+      </div>
+
+      <div class="form-group">
+        <label for="txt-popup">Popup</label>
+        <textarea class="form-control" id="txt-popup" name="popup" rows="6" ng-model="item.popup"></textarea>
+        <p class="help-block"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="txt-initial_query">Initial query</label>
+        <textarea class="form-control" id="txt-initial_query" name="initial_query" rows="6" ng-model="item.initial_query"></textarea>
+        <p class="help-block">Specify the filter that is initially applied to data.</p>
+      </div>
+    </div>
+    <div class="panel-footer">
+      
+      <button type="submit" class="btn btn-primary ">Save</button>
+      <a href="" class="btn btn-danger " >Cancel</a>
+    </div>
+  </div>
+</form>

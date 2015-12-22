@@ -1,0 +1,49 @@
+<html>
+{% url FOLDER_INFO_URL_NAME  as REST_HOME %}
+<head>
+  <title>{%block title %}{% endblock %}</title>
+  <link href='{{STATIC_URL}}{{APP_NAME}}/REST_endpoint/ESRI.ArcGIS.SDS.REST.css' rel='stylesheet' type='text/css'>
+  <link rel='SHORTCUT ICON' href='{{STATIC_URL}}images/cartoview.png'>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
+<meta name="keywords" content="ArcGIS REST Services Directory Root">
+<style type="text/css">
+  span{
+  	color: red;
+  }
+  </style>
+{%block head %}{% endblock %}
+</head>
+<body>
+<table width="100%" class="userTable">
+<tr>
+<td class="titlecell">ArcGIS REST Services Directory</td>
+</tr>
+</table>
+<table class="navTable" width="100%">
+<tbody>
+<tr valign="top">
+<td class="breadcrumbs">
+	<a href="{{REST_HOME}}">Home</a> >
+	<a href="{{REST_HOME}}">services</a>
+	{%block breadcrumb %}{% endblock %}
+</td>
+<td align="right">
+<a href="?f=help" target="_blank">API Reference</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<tr>
+<td class="apiref">
+<a href="?f=pjson" target="_blank">JSON</a>
+</td>
+</tr>
+</table>
+<div class='restHeader'>
+<h2>{%block title_h2 %}{% endblock %}</h2>
+</div>
+<div class='restBody'>
+{%block restBody %}{% endblock %}
+</div>
+</body>
+</html>

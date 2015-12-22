@@ -1,0 +1,4 @@
+<a class="btn btn-default" href="{{ layer.meta_page_url }}" target="_blank">ArcGIS REST <i class="fa fa-external-link"></i></a>
+{% if can_edit %}
+    <a class="btn btn-primary" href="{% url LAYER_EDIT_URL_NAME layer.name %}">Edit</a>
+{% endif %}

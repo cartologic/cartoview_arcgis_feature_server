@@ -1,0 +1,68 @@
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Generate Extent</h4>
+            </div>
+            <div class="modal-body">
+               <div id="map" style="height: 300px;width:100%"></div>
+                <label>Map Extent:  </label><br/><span id="mapExtent"></span>
+                <br/>
+                <label>Bookmark Extent:  </label><br/><span id="bookmarkExtent"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="jsonModal" tabindex="-1" role="dialog" aria-labelledby="jsonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="jsonModalLabel">Generate Bookmark</h4>
+            </div>
+            <div class="modal-body">
+                <textarea id="jsonEditor"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<form ng-submit="save()">
+
+  <div class="panel panel-info">
+    <div class="panel-heading clearfix">
+        <h4 class="panel-title pull-left" style="padding-top: 7.5px;">Edit Webmap</h4>
+        <div class="btn-group pull-right">
+            <button id="btn-extent" class="btn btn-default btn-sm" title="Generate Extent" type="button" data-toggle="modal"
+                    data-target="#myModal"><i class="glyphicon glyphicon-globe"></i> Generate Extent
+            </button>
+             <button id="btn-bookmark" class="btn btn-default btn-sm" title="Generate Bookmark" type="button" data-toggle="modal"
+                data-target="#jsonModal"><i class="glyphicon glyphicon-bookmark"></i> Generate Bookmark
+        </button>
+        </div>
+    </div>
+    <div class="panel-body">
+    	
+      <div class="form-group">
+          <label>Config</label>
+          <div ng-model="item.text" ui-codemirror="{lineNumbers: true, mode: 'javascript'}"></div>
+      </div>
+ 	</div> 
+    <div class="panel-footer">
+      <button type="submit" class="btn btn-primary ">Save</button>
+      <!-- <a  class="btn btn-danger" >Cancel</a> -->
+    </div>
+  </div>
+</form>

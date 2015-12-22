@@ -1,0 +1,158 @@
+{% extends REST_ENDPOINT_BASE_HTML_TPL %}
+{% block title %}Query: {{layer.name}} (ID: 0){% endblock %}
+{% block title_h2 %}Query: {{layer.name}} (ID: 0){% endblock %}
+{% block restBody %}
+<form name="sdform">
+<table class="formTable">
+<tbody><tr valign="top">
+<td>Where:</td>
+<td><input type="text" name="where" value="" size="75"></td>
+</tr>
+<tr valign="top">
+<td>Text:</td>
+<td><input type="text" name="text" value=""></td>
+</tr>
+<tr valign="top">
+<td>Object IDs:</td>
+<td><input type="text" name="objectIds" value="" size="75"></td>
+</tr>
+<tr valign="top">
+<td>Time:</td>
+<td><input type="text" name="time" value="" size="75"></td>
+</tr>
+<tr>
+<td>Input Geometry:</td>
+<td>
+<textarea name="geometry" rows="5" cols="55"></textarea>
+</td>
+</tr>
+<tr>
+<td>Geometry Type:</td>
+<td>
+<select name="geometryType">
+<option value="esriGeometryEnvelope">Envelope</option>
+<option value="esriGeometryPoint">Point</option>
+<option value="esriGeometryPolyline">Polyline</option>
+<option value="esriGeometryPolygon">Polygon</option>
+<option value="esriGeometryMultipoint">Multipoint</option>
+</select>
+</td>
+</tr>
+<tr valign="top">
+<td>Input Spatial Reference:</td>
+<td><input type="text" name="inSR" value="" size="75"></td>
+</tr>
+<tr>
+<td>Spatial Relationship:</td>
+<td>
+<select name="spatialRel">
+<option value="esriSpatialRelIntersects">Intersects</option>
+<option value="esriSpatialRelContains">Contains</option>
+<option value="esriSpatialRelCrosses">Crosses</option>
+<option value="esriSpatialRelEnvelopeIntersects">Envelope Intersects</option>
+<option value="esriSpatialRelIndexIntersects">Index Intersects</option>
+<option value="esriSpatialRelOverlaps">Overlaps</option>
+<option value="esriSpatialRelTouches">Touches</option>
+<option value="esriSpatialRelWithin">Within</option>
+<option value="esriSpatialRelRelation">Relation</option>
+</select>
+</td>
+</tr>
+<tr valign="top">
+<td>Relation:</td>
+<td><input type="text" name="relationParam" value=""></td>
+</tr>
+<tr valign="top">
+<td>Out Fields:</td>
+<td><input type="text" name="outFields" value="" size="75"></td>
+</tr>
+<tr>
+<td>Return Geometry:</td>
+<td>
+<input type="radio" name="returnGeometry" value="true" checked="true"> True &nbsp;
+<input type="radio" name="returnGeometry" value="false"> False
+</td>
+</tr>
+<tr valign="top">
+<td>Max Allowable Offset:</td>
+<td><input type="text" name="maxAllowableOffset" value=""></td>
+</tr>
+<tr valign="top">
+<td>Geometry Precision:</td>
+<td><input type="text" name="geometryPrecision" value=""></td>
+</tr>
+<tr valign="top">
+<td>Output Spatial Reference:</td>
+<td><input type="text" name="outSR" value="" size="75"></td>
+</tr>
+<tr>
+<td>Return IDs Only:</td>
+<td>
+<input type="radio" name="returnIdsOnly" value="true"> True &nbsp;
+<input type="radio" name="returnIdsOnly" value="false" checked="true"> False
+</td>
+</tr>
+<tr>
+<td>Return Count Only:</td>
+<td>
+<input type="radio" name="returnCountOnly" value="true"> True &nbsp;
+<input type="radio" name="returnCountOnly" value="false" checked="true"> False
+</td>
+</tr>
+<tr>
+<td>Order By Fields:</td>
+<td><input type="text" name="orderByFields" value="" size="50"></td>
+</tr>
+<tr>
+<td>Group By Fields (For Statistics):</td>
+<td><input type="text" name="groupByFieldsForStatistics" value="" size="50"></td>
+</tr>
+<tr>
+<td>Output Statistics:</td>
+<td><textarea name="outStatistics" rows="5" cols="55"></textarea></td>
+</tr>
+<tr>
+<td>ReturnZ:</td>
+<td>
+<input type="radio" name="returnZ" value="true"> True &nbsp;
+<input type="radio" name="returnZ" value="false" checked="true"> False
+</td>
+</tr>
+<tr>
+<td>ReturnM:</td>
+<td>
+<input type="radio" name="returnM" value="true"> True &nbsp;
+<input type="radio" name="returnM" value="false" checked="true"> False
+</td>
+</tr>
+<tr valign="top">
+<td>Geodatabase Version Name:</td>
+<td><input type="text" name="gdbVersion" value=""></td>
+</tr>
+<tr>
+<td>Return Distinct Values:</td>
+<td>
+<input type="radio" name="returnDistinctValues" value="true"> True &nbsp;
+<input type="radio" name="returnDistinctValues" value="false" checked="true"> False
+</td>
+</tr>
+<tr>
+<td>Format:</td>
+<td>
+<select name="f">
+<option value="html">HTML</option>
+<option value="pjson">JSON</option>
+<option value="amf">AMF</option>
+<option value="kmz">KMZ</option>
+</select>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="left">
+<input type="submit" value="Query (GET)">
+<input type="submit" onclick="this.form.method = 'post';" value="Query (POST)">
+</td>
+</tr>
+</tbody></table>
+</form>
+{% endblock %}

@@ -1,0 +1,52 @@
+<p>
+  {$ title $}
+</p>
+
+<div class="panel panel-default">
+  <div class="panel-body table-responsive" style="padding:0px;">
+    <table ng-if="items.length" class="table table-striped table-condensed table-hover table-bordered">
+        <thead>
+            <tr>
+                <th><a href="" ng-click="reverse=!reverse;order('title', reverse)">Title</a></th>
+                <th><a href="" ng-click="reverse=!reverse;order('name', reverse)">Table Name</a></th>
+                <th><a href="" ng-click="reverse=!reverse;order('geometry_type', reverse)">Type</a></th>
+                <th><a href="" ng-click="reverse=!reverse;order('srid', reverse)">Spatial Reference</a></th>
+                <th><a href="" ng-click="reverse=!reverse;order('num_features', reverse)">Number of Features</a></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="item in items" ng-class="{selected:item.angularStatus.selected}" ng-init="initItem(item)" ng-click="selectItem(item,true)" id="tr-{$ item.id $}" on-finish-render="selectItemFromUrl()">
+              <td>{$ item.title $}</td>
+              <td>{$ item.table_name $}</td>
+              <td>{$ item.geometry_type $}</td>
+              <td>{$ item.srid $}</td>
+              <td>{$ item.num_features $}</td>
+              
+            </tr>
+        </tbody>
+    </table>
+    <div ng-hide="items.length" style="padding:10px;">
+      <h4>
+        <a ng-click="add()" href="">You have no tables, add new!</a>
+      </h4>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <a ng-click="add()" href="" class="btn btn-default btn-sm">
+      <i class="glyphicon glyphicon-plus-sign"></i>
+    </a>
+    <div class="pull-right" ng-if="itemsPerPage<totalItems" style=" margin-top: -20px;">
+      <pagination total-items="totalItems" ng-model="currentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false" items-per-page="itemsPerPage" ng-change="loadData(currentPage)"></pagination>
+    </div>
+  </div>
+</div>
+
+
+<div ng-if="messages.length">
+  <div ng-repeat="msg in messages" class="alert alert-{$ msg.cls $}" >{$ msg.text $}</div>
+</div>
+
+<ng-include src="templatesRoot + 'tables/details.html'"></ng-include>
+<ng-include src="templatesRoot + 'tables/add.html'"></ng-include>
+<ng-include src="templatesRoot + 'tables/edit.html'"></ng-include>
+

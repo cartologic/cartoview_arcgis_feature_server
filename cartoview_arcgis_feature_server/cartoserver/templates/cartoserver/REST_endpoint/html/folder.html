@@ -1,0 +1,22 @@
+{% extends REST_ENDPOINT_BASE_HTML_TPL %}
+{% block title %}Folder: /{% endblock %}
+{% block title_h2 %}Folder: /{% endblock %}
+{% block restBody %}
+
+<b>Current Version:</b> {{ARCGIS_SUPPORTED_VERSION}}<br/>
+<br/>
+<b>Folders:</b> <br/>
+<br/>
+<ul id='servicesList'>
+	{% for f in json.folders %}
+	<li><a href="{{f.name}}/">{{f.name}}</a></li>
+	{% endfor %}
+</ul><br/>
+<b>Services:</b> <br/>
+<br/>
+<ul id='servicesList'>
+	{% for s in json.services %}
+	<li><a href="{% url SERVICE_INFO_URL_NAME s.name%}">{{s.name}}</a> ({{s.type}})</li>
+	{% endfor %}
+</ul><br/>
+{% endblock %}
