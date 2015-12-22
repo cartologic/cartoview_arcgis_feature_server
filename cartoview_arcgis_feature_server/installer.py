@@ -23,7 +23,6 @@ def install():
     settings.INSTALLED_APPS += ('cartoview.apps.cartoview_arcgis_feature_server.cartoserver',)
     from django.db.models.loading import load_app
     load_app('cartoview.apps.cartoview_arcgis_feature_server.cartoserver')
-    map_all_layers()
 
 
 def uninstall():
