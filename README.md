@@ -1,4 +1,4 @@
-# cartoview_arcgis_feature_server
+# Cartoview ArcGIS Feature Server
 
 [ESRI GeoServices REST API implemtnation](https://www.esri.com/library/whitepapers/pdfs/geoservices-rest-spec.pdf) using Django and PostGIS. You can manage and publish your GIS data as ESRI feature service layers with ArcGIS GeoServices REST API. Allowing these layers to be fully intrgtate with esri API's and templates.
 
