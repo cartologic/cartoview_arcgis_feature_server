@@ -10,6 +10,7 @@ import QueryParser
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.views.decorators.gzip import gzip_page
 from .layers_providers import layers_provider
 from .forms import AttachmentForm
 from .models import Attachment
@@ -34,7 +35,7 @@ def response_to_json(request, context):
 def response_to_html(request, context, template):
     return render(request, template, context)
 
-
+@gzip_page
 def response_to_format(request, context, template):
     response_format = str(request.GET.get("f", request.POST.get("f", "HTML"))).upper()
     if response_format == "HTML":
