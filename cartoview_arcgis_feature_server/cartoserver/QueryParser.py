@@ -72,14 +72,14 @@ def parse_where(expression_str):
     logical_def = oneOf('and or', caseless=True)
 
     function_parameter = realNum | intNum | quotedString | ident
-    function_call = ident + Optional("(" + Group(delimitedList(function_parameter, ',')) + ")")
+    expression = (ident + Optional("(" + Group(delimitedList(function_parameter, ',')) + ")")) | realNum | intNum
 
     # where clause
     where_clause = Forward()
     standard_condition = (
-        function_call.setResultsName('lfs') +
+        expression.setResultsName('lfs') +
         binary_operators_def.setResultsName("operator") +
-        (quotedString | Word(nums) | function_call)
+        (quotedString | Word(nums) | expression)
         .setResultsName("value")
     ).setResultsName("condition")
 
