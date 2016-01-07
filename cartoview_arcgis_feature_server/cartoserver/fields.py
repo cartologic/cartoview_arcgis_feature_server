@@ -3,16 +3,15 @@ from django import forms
 from django.db import models
 from . import APP_NAME
 from django.templatetags.static import static
-from django.utils.safestring import  mark_safe
+from django.utils.safestring import mark_safe
+
 
 class ColorWidget(forms.TextInput):
     class Media:
         js = [static(APP_NAME) + "/manager/js/color-picker.js"]
 
-
-
     def render(self, name, value, attrs=None):
-        html = super(ColorWidget,self).render(name,value,attrs)
+        html = super(ColorWidget, self).render(name, value, attrs)
         html += """<script type="text/javascript" charset="utf-8">
 (function($){
     $(function(){
@@ -31,3 +30,9 @@ class ColorField(models.CharField):
     def formfield(self, **kwargs):
         kwargs['widget'] = ColorWidget
         return super(ColorField, self).formfield(**kwargs)
+
+    def south_field_triple(self):
+        from south.modelsinspector import introspector
+        field_class = self.__class__.__module__ + "." + self.__class__.__name__
+        args, kwargs = introspector(self)
+        return (field_class, args, kwargs)

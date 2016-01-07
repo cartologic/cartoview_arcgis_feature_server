@@ -17,27 +17,44 @@ DEFAULT_SPATIAL_REL = 'esriSpatialRelIntersects'
 
 class GeoDjangoGeometrySerializer(object):
     @staticmethod
-    def esriGeometryPoint(geometry):
+    def simplify(layer, geom, qs, query_geom):
+
+        if query_geom is not None:
+            bbox = query_geom.extent
+        else:
+            bbox = qs.extent()
+
+        tolerance = min(abs(bbox[0]-bbox[2]), abs(bbox[1]-bbox[3])) * layer.tolerance_factor
+        return geom.simplify(tolerance, True)
+
+    @staticmethod
+    def esriGeometryPoint(geometry, layer, qs, query_geom):
         return {
             'x': geometry.coords[0],
             'y': geometry.coords[1],
         }
 
     @staticmethod
-    def esriGeometryPolyline(geometry):
+    def esriGeometryPolyline(geometry, layer, qs, query_geom):
+        if layer.enable_geometry_simplify:
+            geometry = GeoDjangoGeometrySerializer.simplify(layer, geometry, qs, query_geom)
         paths = [geometry.coords] if geometry.geom_type == 'LineString' else geometry.coords
         return {'paths': paths}
 
     @staticmethod
-    def esriGeometryPolygon(geometry):
+    def esriGeometryPolygon(geometry, layer, qs, query_geom):
         try:
+            if layer.enable_geometry_simplify:
+                geometry = GeoDjangoGeometrySerializer.simplify(layer, geometry, qs, query_geom)
             rings = geometry.coords[0] if geometry.geom_type == 'MultiPolygon' else geometry.coords
             return {'rings': rings}
         except:
             return None
 
     @staticmethod
-    def esriGeometryMultipoint(geometry):
+    def esriGeometryMultipoint(geometry, layer, qs, query_geom):
+        if layer.enable_geometry_simplify:
+            geometry = GeoDjangoGeometrySerializer.simplify(layer, geometry, qs, query_geom)
         return {'points': geometry.coords}
 
 
@@ -61,6 +78,7 @@ class GeoDjangoQuery:
             where = query_obj.where.replace("%", "%%")
             qs = qs.extra(where=[where])
         # add spatial query to filters
+        query_obj.geom = GeoDjangoQuery._get_query_geometry(query_obj)
         qs = GeoDjangoQuery._build_spatial_query(layer, query_obj, qs)
 
 
@@ -78,7 +96,7 @@ class GeoDjangoQuery:
                 outFields = layer.fields_names
             else:
                 outFields = outFields.split(",")
-            result = GeoDjangoQuery._get_list(layer, qs, outFields, query_obj.returngeometry, outSR)
+            result = GeoDjangoQuery._get_list(layer, qs, query_obj.geom, outFields, query_obj.returngeometry, outSR)
         return result
 
     @staticmethod
@@ -89,12 +107,11 @@ class GeoDjangoQuery:
         @param qs: a django query set to apply the spatial query on it
         @return: a django query set after applying the spatial query if found in the request
         """
-        geom = GeoDjangoQuery._get_query_geometry(query_obj)
-        if geom:
+        if query_obj.geom:
             query_obj.spatialrel = query_obj.spatialrel or DEFAULT_SPATIAL_REL
             filter_kwargs = {}
             key = layer.geometry_field_name + SPATIAL_RELATION_MAPPING[query_obj.spatialrel]
-            filter_kwargs[key] = geom
+            filter_kwargs[key] = query_obj.geom
             qs = qs.filter(**filter_kwargs)
         return qs
 
@@ -151,7 +168,7 @@ class GeoDjangoQuery:
         return result_data
 
     @staticmethod
-    def _get_list(layer, query_set, out_fields, returnGeometry, outSR):
+    def _get_list(layer, query_set, query_geom, out_fields, returnGeometry, outSR):
         """
         serialize the django query set into arcGIS JSON format.
         @param layer: FeatureLayer
@@ -169,7 +186,7 @@ class GeoDjangoQuery:
                 geom = getattr(item, layer.geometry_field_name)
                 if geom:
                     geometry_fn = getattr(GeoDjangoGeometrySerializer, layer.geometry_type)
-                    geometry = geometry_fn(geom)
+                    geometry = geometry_fn(geom, layer, query_set, query_geom)
                 feature['geometry'] = geometry
             attributes = {}
             for p in out_fields: #GeoDjangoQuery.fields_names:

@@ -197,6 +197,12 @@ class FeatureLayer(DatedModel):
                                      help_text="Specify the filter that is initially applied to data.")
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(app_label)s_%(class)s', null=True, blank=True)
     has_attachments = models.BooleanField(default=True)
+    enable_geometry_simplify = models.BooleanField(default=True, help_text="""by set this as True, the returned geometry
+     in query requested will be simplified to reduce the number of coordinates which lead to reduce the response size.""")
+    tolerance_factor = models.FloatField(default=0, help_text="""When geometry simplify is enabled,
+    the simplify tolerance will be this factor multiplied by the minimum edge length in the resulted data bounding box.
+    <br/>While simplifing, Points are removed if the distance with the tentative simplified line is smaller than the tolerance.
+    <br/>value must be from 0 to 1""")
 
     class Meta:
         verbose_name = "Feature Service"

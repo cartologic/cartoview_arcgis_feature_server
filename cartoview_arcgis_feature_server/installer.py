@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 
 info = {
     "title": "Cartoserver",
-    "description": "A Fature Server Implementation. This is an implementation of the ArcGIS REST API. The application handles ArcGIS REST API requests to custom data providers, and returns their output in ArcGIS JSON format",
+    "description": "Cartoview ArcGIS Feature Server implements ArcGIS Geoservices REST API and serves your GIS data stored in geonode as an ESRI ArcGIS featureservice.",
     "author": 'Cartologic',
     "home_page": 'http://cartologic.com/cartoview/apps/cartoserver',
     "help_url": "http://cartologic.com/cartoview/apps/cartoserver/help/",
