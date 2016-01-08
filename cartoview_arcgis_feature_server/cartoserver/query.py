@@ -25,7 +25,7 @@ class GeoDjangoGeometrySerializer(object):
             bbox = qs.extent()
 
         tolerance = min(abs(bbox[0]-bbox[2]), abs(bbox[1]-bbox[3])) * layer.tolerance_factor
-        return geom.simplify(tolerance, True)
+        return geom.simplify(tolerance, False)
 
     @staticmethod
     def esriGeometryPoint(geometry, layer, qs, query_geom):
