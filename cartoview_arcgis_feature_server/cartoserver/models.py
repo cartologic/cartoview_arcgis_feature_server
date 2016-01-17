@@ -677,7 +677,11 @@ class Connector(object):
 
         # Add max_length for all CharFields.
         if field_type == 'CharField' and row[3]:
-            field_params['max_length'] = int(row[3])
+            max_length = int(row[3])
+            if max_length == -1:
+                field_type = 'TextField'
+            else:
+                field_params['max_length'] = max_length
 
         if field_type == 'DecimalField':
             if row[4] is None or row[5] is None:
@@ -693,10 +697,12 @@ class Connector(object):
         return field_type, field_params, field_notes
 
     def create_model(self, table):
+
         """
         Create specified model
         """
         table_name = str(table["f_table_name"])
+        print 'cartoserver: creating model for %s...' % table_name
         try:
             indexes = self.connection.introspection.get_indexes(self.cursor, table_name)
         except NotImplementedError:
@@ -735,7 +741,10 @@ class Connector(object):
                 field_type = geometry_types[str(table['type']).upper()]
                 field_params['srid'] = table['srid']
             field_type_cls = getattr(models_cls, field_type)
-            model_attrs.update({column_name: field_type_cls(**field_params)})
+            from .postgis import get_model_field_name
+            field_name = get_model_field_name(column_name)
+            model_attrs.update({field_name: field_type_cls(**field_params)})
+
         model_name = "%s_%s" % (self.db, table_name)
         model = type(model_name, (BaseModel,), model_attrs)
         try:
