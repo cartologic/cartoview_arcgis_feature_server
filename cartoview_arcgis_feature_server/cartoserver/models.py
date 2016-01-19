@@ -631,6 +631,7 @@ geometry_types = {
 
 
 class Connector(object):
+    model_name_index = 0
     def __init__(self, db='default'):
         self.db = db
         self.connection = connections[self.db]
@@ -744,12 +745,13 @@ class Connector(object):
             from .postgis import get_model_field_name
             field_name = get_model_field_name(column_name)
             model_attrs.update({field_name: field_type_cls(**field_params)})
-
-        model_name = "%s_%s" % (self.db, table_name)
+        
+        self.model_name_index += 1
+        model_name = "%s_%d" % (self.db, self.model_name_index)
+        
         model = type(model_name, (BaseModel,), model_attrs)
         try:
-            content_type, created = ContentType.objects.get_or_create(app_label=APP_NAME, name=model_name,
-                                                                      model=model_name)
+            content_type, created = ContentType.objects.get_or_create(app_label=APP_NAME, name=model_name, model=model_name)
             if getattr(settings, "USE_MANAGED_GEO_SERVICES", False):
                 datastore = Datastore.get_by_connection_name(self.db)
                 geotable, created = GeoTable.objects.get_or_create(datastore=datastore, table_name=table_name,

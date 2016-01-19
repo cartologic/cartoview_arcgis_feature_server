@@ -8,4 +8,4 @@ LAYER_EDIT_TPL = APP_NAME + "/layer_edit.html"
 LAYER_LIST_URL_NAME = APP_NAME + "_layer_list"
 LAYER_EDIT_URL_NAME = APP_NAME + "_layer_edit"
 
-urls_dict= {"admin":{LAYER_LIST_URL_NAME:"Cartoserver"}}
+# urls_dict= {"admin":{LAYER_LIST_URL_NAME:"Cartoserver"}}

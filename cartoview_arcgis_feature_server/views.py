@@ -26,14 +26,16 @@ def layer_list(request):
 @login_required
 def layer_edit(request, layer_name):
     layer = layers_provider.get_layer_for_metadata_edit(layer_name,request)
+    saved = False
     if request.method == "POST":
         form = FeatureLayerEditForm(request.POST, instance=layer)
         if form.is_valid():
             form.save()
-            return redirect(LAYER_LIST_URL_NAME)
+            saved = True
     else:
         form = FeatureLayerEditForm(instance=layer)
     context_dict = get_context({
-        "form": form
+        "form": form,
+        "saved": saved
     })
     return render_to_response(LAYER_EDIT_TPL, RequestContext(request, context_dict))

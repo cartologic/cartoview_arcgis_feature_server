@@ -16,9 +16,9 @@ class GeonodeLayersProvider(Provider):
     def get_layers(self, request):
         # check if there is no layers load layers from geonode.
         # this is useful if the cartoview app was installed after creating geonode layers
-        if FeatureLayer.objects.count() == 0:
-            from .models import map_all_layers
-            map_all_layers()
+        # if FeatureLayer.objects.count() == 0:
+        from .models import map_all_layers
+        map_all_layers()
         return self._get_permitted_queryset(request, 'base.view_resourcebase')
 
     def get_layer(self, name, request):
