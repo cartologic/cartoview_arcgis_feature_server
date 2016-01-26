@@ -105,7 +105,7 @@ class GeoDjangoQuery:
             # Getting the selection SQL for the given geographic field.
             field_col = qs._geocol_select(geo_field, field_name)
             geo_col = qs.query.custom_select.get(geo_field, field_col)
-            custom_sel = 'ST_Simplify(%s, %f, true)' % (geo_col, tolerance)
+            custom_sel = 'ST_SimplifyPreserveTopology(%s, %f)' % (geo_col, tolerance)
             qs.query.custom_select[geo_field] = custom_sel
             return qs._clone()
         else:
