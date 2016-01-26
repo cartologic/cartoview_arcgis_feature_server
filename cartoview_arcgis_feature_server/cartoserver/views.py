@@ -1,7 +1,7 @@
 from . import *
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 from .utils import get_context, DynamicObject
 from .query import GeoDjangoQuery
 from .edit import GeoDjangoEdit
@@ -14,10 +14,11 @@ from django.views.decorators.gzip import gzip_page
 from .layers_providers import layers_provider
 from .forms import AttachmentForm
 from .models import Attachment
+import datetime
 
-
-def response_to_json(request, context):
-    json_str = context['json'].json()
+def response_to_json(request, context=None, json_str=None):
+    if context is not None:
+        json_str = context['json'].json()
     content_type = "application/json"
     callback = request.GET.get('callback', None)
     if callback:
@@ -78,19 +79,34 @@ def layer_info(request, service_name):
     })
     return response_to_format(request, context, REST_ENDPOINT_LAYER_TPL)
 
+# @gzip_page
+# def serialize_response(request, layer, qs, outFields, outSR):
+#     from .serializers.arcgis_json import Serializer
+#     s = Serializer()
+#     s.serialize(queryset=qs, layer=layer, geometry_field=layer.geometry_field_name, fields=outFields, srid=outSR)
+#     return response_to_json(request,json_str=s.getvalue())
 
 @csrf_exempt
 def layer_query(request, service_name):
+    req_in = datetime.datetime.now()
     layer = layers_provider.get_layer(service_name, request)
     query_params = QueryParser.parse(request)
     # print (query_params.__dict__.keys())
     # TODO validate query params before calling GeoDjangoQuery.query
-    query_result = GeoDjangoQuery.query(layer, query_params)
+    qs= GeoDjangoQuery.query(layer, query_params)
     context = get_context(dict(
-        json=query_result,
+        json=qs,
         layer=layer
     ))
-    return response_to_format(request, context, REST_ENDPOINT_LAYER_QUERY_TPL)
+    return response_to_format(request,context,REST_ENDPOINT_LAYER_QUERY_TPL)
+    # response_format = str(request.GET.get("f", request.POST.get("f", "HTML"))).upper()
+    # if response_format == "HTML":
+    #     return render(request, REST_ENDPOINT_LAYER_QUERY_TPL, context)
+    # fields = [f for f in outFields]
+    # if query_params.returngeometry:
+    #     fields += [layer.geometry_field_name,]
+    # return serialize_response(request, layer, qs, fields , outSR)
+
 
 
 @login_required

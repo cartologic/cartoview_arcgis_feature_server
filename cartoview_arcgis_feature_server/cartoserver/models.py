@@ -10,7 +10,7 @@ from django.utils.text import slugify
 from django.contrib.auth.models import User
 import os
 import sys
-from django.utils.datastructures import SortedDict
+from collections import OrderedDict
 from django.contrib.gis.db import models
 from django.db import connections, DEFAULT_DB_ALIAS, transaction
 from django.contrib.contenttypes.models import ContentType
@@ -607,6 +607,7 @@ class GeoManager(models.GeoManager):
         self._db = db
 
 
+
 class BaseModel(models.Model):
     _db = 'default'
 
@@ -658,7 +659,7 @@ class Connector(object):
         description, this routine will return the given field type name, as
         well as any additional keyword parameters and notes for the field.
         """
-        field_params = SortedDict()
+        field_params = OrderedDict()
         field_notes = []
 
         try:

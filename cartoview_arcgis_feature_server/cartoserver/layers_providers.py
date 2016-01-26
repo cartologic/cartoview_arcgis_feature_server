@@ -37,7 +37,9 @@ class BasicProvider(Provider):
             for model_name in Connector.geo_content_types[db]:
                 content_type = Connector.geo_content_types[db][model_name]
                 layer = FeatureLayer()
-                layer.name = layer.service_name = content_type.name
+                layer.enable_geometry_simplify = True
+                layer.tolerance_factor = .01
+                layer.name = layer.service_name = content_type.model_class()._meta.db_table
                 layer.content_type = content_type
                 BasicProvider._layers.append(layer)
                 BasicProvider._layers_dict[layer.name] = layer

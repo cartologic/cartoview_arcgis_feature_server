@@ -2,10 +2,11 @@ __author__ = 'kamal'
 
 from .utils import DynamicObject
 import json
+from django.db import connections
 from django.contrib.gis.db import models
 from django.db.models import Q
 from django.contrib.gis.geos import Polygon, Point, MultiPoint, LineString
-
+from django.contrib.gis.db.backends.postgis.base import DatabaseWrapper as PostgisDatabaseWrapper
 DEFAULT_GEOMETRY_TYPE = 'esriGeometryEnvelope'
 SPATIAL_RELATION_MAPPING = dict(
     esriSpatialRelIntersects="__intersects",
@@ -16,45 +17,30 @@ DEFAULT_SPATIAL_REL = 'esriSpatialRelIntersects'
 
 
 class GeoDjangoGeometrySerializer(object):
-    @staticmethod
-    def simplify(layer, geom, qs, query_geom):
 
-        if query_geom is not None:
-            bbox = query_geom.extent
-        else:
-            bbox = qs.extent()
-
-        tolerance = min(abs(bbox[0]-bbox[2]), abs(bbox[1]-bbox[3])) * layer.tolerance_factor
-        return geom.simplify(tolerance, False)
 
     @staticmethod
-    def esriGeometryPoint(geometry, layer, qs, query_geom):
+    def esriGeometryPoint(geometry):
         return {
             'x': geometry.coords[0],
             'y': geometry.coords[1],
         }
 
     @staticmethod
-    def esriGeometryPolyline(geometry, layer, qs, query_geom):
-        if layer.enable_geometry_simplify:
-            geometry = GeoDjangoGeometrySerializer.simplify(layer, geometry, qs, query_geom)
+    def esriGeometryPolyline(geometry):
         paths = [geometry.coords] if geometry.geom_type == 'LineString' else geometry.coords
         return {'paths': paths}
 
     @staticmethod
-    def esriGeometryPolygon(geometry, layer, qs, query_geom):
+    def esriGeometryPolygon(geometry):
         try:
-            if layer.enable_geometry_simplify:
-                geometry = GeoDjangoGeometrySerializer.simplify(layer, geometry, qs, query_geom)
             rings = geometry.coords[0] if geometry.geom_type == 'MultiPolygon' else geometry.coords
             return {'rings': rings}
         except:
             return None
 
     @staticmethod
-    def esriGeometryMultipoint(geometry, layer, qs, query_geom):
-        if layer.enable_geometry_simplify:
-            geometry = GeoDjangoGeometrySerializer.simplify(layer, geometry, qs, query_geom)
+    def esriGeometryMultipoint(geometry):
         return {'points': geometry.coords}
 
 
@@ -91,13 +77,39 @@ class GeoDjangoQuery:
             outSR = int(query_obj.outsr or layer.srid)
             if outSR != layer.srid and query_obj.returngeometry:
                 qs = qs.transform(outSR if outSR != 102100 else 900913)
+
+            if layer.enable_geometry_simplify and layer.geometry_type in ["esriGeometryPolyline", "esriGeometryPolygon"]:
+                if query_obj.geom is not None:
+                    bbox = query_obj.geom.extent
+                else:
+                    bbox = qs.extent()
+                tolerance = min(abs(bbox[0]-bbox[2]), abs(bbox[1]-bbox[3])) * layer.tolerance_factor
+                qs = GeoDjangoQuery.simplify(qs, tolerance)
+
             outFields = query_obj.outfields or layer.id_field_name or layer.display_field_name
             if outFields == "*":
                 outFields = layer.fields_names
             else:
                 outFields = outFields.split(",")
+
+            # return qs, outFields, outSR
+
             result = GeoDjangoQuery._get_list(layer, qs, query_obj.geom, outFields, query_obj.returngeometry, outSR)
         return result
+
+    @staticmethod
+    def simplify(qs, tolerance):
+        if isinstance(connections[qs.db], PostgisDatabaseWrapper):
+            field_name = None
+            tmp, geo_field = qs._spatial_setup('transform', field_name=field_name)
+            # Getting the selection SQL for the given geographic field.
+            field_col = qs._geocol_select(geo_field, field_name)
+            geo_col = qs.query.custom_select.get(geo_field, field_col)
+            custom_sel = 'ST_Simplify(%s, %f, true)' % (geo_col, tolerance)
+            qs.query.custom_select[geo_field] = custom_sel
+            return qs._clone()
+        else:
+            return qs
 
     @staticmethod
     def _build_spatial_query(layer, query_obj, qs):
@@ -186,7 +198,7 @@ class GeoDjangoQuery:
                 geom = getattr(item, layer.geometry_field_name)
                 if geom:
                     geometry_fn = getattr(GeoDjangoGeometrySerializer, layer.geometry_type)
-                    geometry = geometry_fn(geom, layer, query_set, query_geom)
+                    geometry = geometry_fn(geom)
                 feature['geometry'] = geometry
             attributes = {}
             for p in out_fields: #GeoDjangoQuery.fields_names:
