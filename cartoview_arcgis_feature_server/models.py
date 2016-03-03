@@ -73,6 +73,7 @@ def map_all_layers():
     mapped_layers_ids = LayerMapping.objects.all().values_list('geonode_layer_id')
     not_published = Layer.objects.exclude(pk__in=mapped_layers_ids)
     update_geo_table()
+    print not_published
     for layer in not_published:
         try:
             map_layer(layer)

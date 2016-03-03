@@ -704,7 +704,7 @@ class Connector(object):
         Create specified model
         """
         table_name = str(table["f_table_name"])
-        print 'cartoserver: creating model for %s...' % table_name
+        print 'cartoserver: creating model for %s.%s...' %(self.db, table_name)
         try:
             indexes = self.connection.introspection.get_indexes(self.cursor, table_name)
         except NotImplementedError:
@@ -734,6 +734,7 @@ class Connector(object):
                     field_params['primary_key'] = True
                     # I assumed that the primary key is auto increment TODO: check for this
                     field_type = 'AutoField'
+                    print  'AutoField: ', column_name
                 elif indexes[column_name]['unique']:
                     field_params['unique'] = True
                 else:
@@ -745,14 +746,17 @@ class Connector(object):
             field_type_cls = getattr(models_cls, field_type)
             from .postgis import get_model_field_name
             field_name = get_model_field_name(column_name)
+            # print  field_name
             model_attrs.update({field_name: field_type_cls(**field_params)})
         
         self.model_name_index += 1
         model_name = "%s_%d" % (self.db, self.model_name_index)
+        # print model_name
         
-        model = type(model_name, (BaseModel,), model_attrs)
         try:
+            model = type(model_name, (BaseModel,), model_attrs)
             content_type, created = ContentType.objects.get_or_create(app_label=APP_NAME, name=model_name, model=model_name)
+            # print content_type.id
             if getattr(settings, "USE_MANAGED_GEO_SERVICES", False):
                 datastore = Datastore.get_by_connection_name(self.db)
                 geotable, created = GeoTable.objects.get_or_create(datastore=datastore, table_name=table_name,
@@ -762,6 +766,7 @@ class Connector(object):
                     geotable.save()
                     # table_name=name, title=title, description=description, content_type=content_type,
                     #         is_public=is_public, owner=request.user, datastore=datastore
+            print "---------------------------------------"
             return content_type
         except Exception as ex:
             print ex.args
@@ -787,10 +792,10 @@ class Connector(object):
     def update_models():
         Connector.geo_content_types = {}
         for db in connections.databases:
-            try:
-                Connector(db).create_models()
-            except:
-                print "cannot generate geo models for %s database" % db
+            # try:
+            Connector(db).create_models()
+            # except:
+                # print "cannot generate geo models for %s database" % db
 
 
 # load all databases

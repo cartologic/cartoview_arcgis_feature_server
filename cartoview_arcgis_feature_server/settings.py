@@ -1,5 +1,5 @@
 __author__ = 'kamal'
-from geonode.cartoview_settings import CARTOVIEW_APPS
+from cartoview.settings import CARTOVIEW_APPS
 import os, sys
 APP_NAME = 'cartoview_arcgis_feature_server'
 current_folder = os.path.dirname(__file__)
