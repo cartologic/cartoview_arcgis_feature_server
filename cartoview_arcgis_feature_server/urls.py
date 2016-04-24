@@ -11,4 +11,5 @@ manager_urls = patterns('',
 urlpatterns = patterns('',
    url(r'^', include(manager_urls)),
    url(r'^arcgis/rest/', include(geo_services_rest_patterns)),
+   url(r'^portal/', include('cartoview_arcgis_feature_server.cartoportal.urls')),
 )

@@ -1,0 +1,126 @@
+{% load leaflet_tags staticfiles %}
+
+{% block styles %}
+{% leaflet_css %}
+<link rel="stylesheet" href="{% static 'codemirror/lib/codemirror.css' %}">
+
+<style>
+    .CodeMirror{
+        height:500px;
+    }
+    #ct-actions button{
+        margin-right:5px;
+    }
+</style>
+{% endblock styles %}
+
+{% block sidebar %}
+    <a href="#ct-map" class="list-group-item active">Web Map JSON</a>
+    {% block sidebar_extension %}
+    {% endblock sidebar_extension %}
+{% endblock sidebar %}
+
+{% block before_cards %}
+    <form class="form" id='form-map_viewer' role="form" method="post" enctype="multipart/form-data">
+    <div id="ct-actions" class="col-md-9" style="margin-bottom:10px;padding:0px;">
+        <button id="btn-save" class="btn btn-primary pull-right" title="Save" type="submit"><i
+                class="glyphicon glyphicon-floppy-disk"></i> Save
+        </button>
+        <button id="btn-extent" class="btn btn-secondry pull-left" title="Generate Extent" type="button" data-toggle="modal"
+                data-target="#myModal"><i class="glyphicon glyphicon-globe"></i> Generate Extent
+        </button>
+        <button id="btn-bookmark" class="btn btn-secondry pull-left" title="Generate Bookmark" type="button" data-toggle="modal"
+                data-target="#jsonModal"><i class="glyphicon glyphicon-bookmark"></i> Generate Bookmark
+        </button>
+            <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Generate Extent</h4>
+                    </div>
+                    <div class="modal-body">
+                       <div id="map" style="height: 300px;width:100%"></div>
+                        <label>Map Extent:  </label><br/><span id="mapExtent"></span>
+                        <br/>
+                        <label>Bookmark Extent:  </label><br/><span id="bookmarkExtent"></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="jsonModal" tabindex="-1" role="dialog" aria-labelledby="jsonModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="jsonModalLabel">Generate Bookmark</h4>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="jsonEditor"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% csrf_token %}
+{% endblock %}
+{% block after_cards %}</form>{% endblock %}
+
+{% block cards %}
+<div class="card" id="ct-map">
+    <textarea id="mapJson" name="map-json" rows="25" cols="40" class=" form-control"></textarea>
+</div>
+{% endblock cards%}
+
+{% block more_scripts %}
+{% leaflet_js %}
+<script src="{% static 'codemirror/lib/codemirror.js' %}"></script>
+<script src="{% static 'codemirror/mode/javascript/javascript.js' %}"></script>
+<script type="text/javascript">
+    var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('mapJson'), {
+        mode: "javascript",
+        electricChars: true
+    });
+     var jsonEditor = CodeMirror.fromTextArea(document.getElementById('jsonEditor'), {
+        mode: "javascript"
+    });
+    {% if item_obj %}
+        myCodeMirror.setValue('{{item_obj|escapejs}}');
+    {% endif %}
+        var map = null;
+        $('#myModal').on('shown.bs.modal', function (e) {
+            if (!map) {
+                map = L.map('map', {
+                    center: [30, 30],
+                    zoom: 3
+                });
+                L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18
+                }).addTo(map);
+                updateExtent();
+                map.on('moveend', updateExtent);
+            }
+        });
+        jsonEditor.setValue('"bookmarks": [\n\t{\n\t\t"name": "<bookmark name>",\n\t\t"extent": <copy extent genrerated here>\n\t}\n]');
+        function updateExtent(){
+            var extentStr = "[["+map.getBounds().getWest()+","+map.getBounds().getSouth()+"],["+map.getBounds().getEast()+","+map.getBounds().getNorth()+"]]";
+            $('#mapExtent').text(extentStr);
+            var bookmarkExtent =
+                    '"extent": {"xmin": '+map.getBounds().getWest()+',"ymin": '+map.getBounds().getSouth()
+                    +',"ymax": '+map.getBounds().getNorth()+',"xmax": '+map.getBounds().getEast()+',"spatialReference": {"wkid": 4326,"latestWkid": 4326}}';
+            $('#bookmarkExtent').text(bookmarkExtent);
+        }
+</script>
+{% endblock more_scripts %}

@@ -1,0 +1,44 @@
+[{
+    "id": "wms_{{id}}",
+    "title": "{{title}}",
+    "url": "{{url}}",
+    "visibility": true,
+    "visibleLayers": [
+        "{{layergroup_name}}"
+    ],
+    "opacity": {{opacity}},
+    "type": "WMS",
+    "layerType": "WMS",
+    "version": "{{version}}",
+    "mapUrl": "{{url}}",
+    "layers": [{
+            "name": "{{layergroup_name}}",
+            "title": "{{layergroup_name}}"
+        }],
+    "spatialReferences": [3857, 2154, 23030, 23031, 23032, 27561, 27562, 27563, 27564, 27571, 27572, 27573, 27574, 3035, 3942, 3948, 4171, 4258, 4326, 900913],
+    "extent": [
+        [{{bbox.0}}, {{bbox.1}}],
+        [{{bbox.2}}, {{bbox.3}}]
+    ],
+    "copyright": "{{copyright}}"
+}
+    {% for layer in featurelayers %},
+    {
+        "id": "layer_{{layer.id}}",
+        "layerType": "ArcGISFeatureLayer",
+        "url": "{{layer.url}}",
+        "visibility": true,
+        "opacity": 0,
+        "mode": 1,
+        "title": "{{layer.title}}",
+        "popupInfo": {
+            "title": "{{layer.title}}",
+            "fieldInfos": {{layer.fields|safe}},
+            "description": null,
+            "showAttachments": true,
+            "mediaInfos": []
+        }
+    }
+    {% endfor %}
+
+]

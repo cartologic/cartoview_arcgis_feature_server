@@ -1,0 +1,48 @@
+{% extends BASE_TPL %}
+{% load i18n %}
+{% load url from future %}
+{% load arcgis_portal_tags %}
+
+{% block title %} Web Maps {% endblock %}
+
+{% block body_class %}data{% endblock %}
+
+  {% block body %}
+      <h3>Web Maps</h3>
+        <div class="alert alert-info" role="alert">
+            <strong><i class="fa fa-info-circle"></i> Portal URL: </strong> {{ portal_base_url }}
+            <p>To access these maps from products like web app builder or web app templates, you can use this URL as the arcgis portal url along with your username and password</p>
+        </div>
+      <div class="panel panel-default">
+        <div class="panel-body table-responsive" style="padding:0px;">
+
+          <table class="table table-striped table-condensed table-hover table-bordered">
+              <thead>
+                  <tr>
+                      <th><a href="">Title</a></th>
+                      <th>Web Map ID</th>
+                      {% if request.user.is_authenticated %}<th></th>{% endif %}
+                  </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                    {% if request.user.is_authenticated%}
+                  <tr>
+                    <td>
+                        {{ item.geonode_map.title }}
+                    </td>
+                    <td>
+                        {#{{ portal_base_url }}/sharing/rest/content/items/#}
+                        {{ item.portal_item.id }}
+                    </td>
+                    {% if request.user.is_authenticated %}
+                    <td>{% map_list_actions %}</td>
+                  {% endif %}
+                  </tr>
+                    {% endif %}
+              {% endfor %}
+              </tbody>
+          </table>
+        </div>
+      </div>
+  {% endblock body %}

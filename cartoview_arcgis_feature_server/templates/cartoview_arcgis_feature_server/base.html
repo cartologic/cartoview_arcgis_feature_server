@@ -3,8 +3,9 @@
 {% block body_outer %}
     <div style="height: 20px;"></div>
     <ul class="nav nav-pills">
-      <li role="presentation"><a href="{% url LAYER_LIST_URL_NAME %}">Feature Layers</a></li>
-      <li role="presentation"><a href="{% url 'cartoserver_folder_info' %}">ArcGIS Server REST</a></li>
+        <li role="presentation"><a href="{% url LAYER_LIST_URL_NAME %}">Feature Layers</a></li>
+        <li role="presentation"><a href="{% url 'cartoserver_folder_info' %}">ArcGIS Server REST</a></li>
+        <li role="presentation"><a href="{% url MAP_LIST_URL_NAME %}">Web Maps</a></li>
     </ul>
   {% block body %}
   {% endblock body %}

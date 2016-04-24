@@ -1,0 +1,4 @@
+{% if can_edit %}
+        <a class="btn btn-primary" href="{% url MAP_EDIT_URL_NAME item.pk %}">Edit</a>
+{% endif %}
+<a class="btn btn-default" target="_blank" href="{% url 'map_detail' item.geonode_map.pk %}">Original Map <i class="fa fa-external-link"></i></a>

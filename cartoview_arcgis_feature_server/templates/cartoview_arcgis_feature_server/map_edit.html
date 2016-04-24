@@ -1,0 +1,164 @@
+{% extends BASE_TPL %}
+{% load i18n %}
+{% load url from future %}
+
+{% block title %} Cartoserver Map - Edit{% endblock %}
+
+{% block body_class %}data{% endblock %}
+
+  {% block body %}
+      <h3>{{ map_obj.geonode_map.title }}</h3>
+      <a class="btn btn-default" target="_blank" href="{% url 'map_detail' map_obj.geonode_map.pk %}">Original Map <i class="fa fa-external-link"></i></a>
+
+
+          <div class="pull-right">
+              {% if map_obj.edited %}
+            <form method="post" class="pull-left" action="{% url MAP_CONFIG_RESET_URL_NAME map_obj.id %}">{% csrf_token %}
+                <button type="submit" class="btn btn-primary " style="margin: 0 10px;">Reset Default Config</button>
+            </form>
+            {% endif %}
+
+            <button type="button" class="btn btn-primary pull-left" data-toggle="modal" data-target="#modal-agol">
+              Import Config from ArcGIS Online Map
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="modal-agol" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+                  </div>
+                  <div class="modal-body">
+                      <div class="form-group">
+                          <label for="agsol-webmapid">Web Map Id</label>
+                          <input type="text" id="txt-agol-webmapid" class="form-control">
+                      </div>
+                      <div id="form-agol-login" class="hide">
+                          <div class="form-group">
+                              <p>Please sign in to access the item on ArcGIS Online</p>
+                          </div>
+                          <div class="form-group">
+                              <label for="agsol-webmapid">Username</label>
+                              <input type="text" id="txt-agol-username" class="form-control">
+                          </div>
+                          <div class="form-group">
+                              <label for="agsol-webmapid">Password</label>
+                              <input type="password" id="txt-agol-password" class="form-control">
+                          </div>
+                      </div>
+                      <div class="form-group has-error">
+                          <p class="help-block" id="lbl-error"></p>
+                      </div>
+
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button id="btn-load-webmap" type="button" class="btn btn-primary">Load</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+      <form method="post" action="{% url MAP_CONFIG_SAVE_URL_NAME map_obj.id %}">{% csrf_token %}
+          <div class="panel panel-info">
+{#            <div class="panel-heading">#}
+{#                Cartoserver Map - Edit#}
+{#            </div>#}
+            <div class="panel-body">
+                <div class="form-group">
+                    <label for="web-map-id">Web Map Id</label>
+                    <input id="web-map-id" name="web-map-id" type="text" readonly class=" form-control" value="{{ map_obj.portal_item.id }}"/>
+                </div>
+                <div class="form-group">
+                    <label for="config-json">Web Map Config</label>
+                    <textarea id="config-json" name="config-json" rows="25" cols="40" class="form-control"></textarea>
+                </div>
+
+
+
+            </div>
+            <div class="panel-footer">
+
+              <button type="submit" class="btn btn-primary ">Save</button>
+
+            </div>
+          </div>
+        </form>
+
+  {% endblock body %}
+
+
+{% block extra_script %}
+    <script type="text/javascript" src="{{ STATIC_URL }}cartoserver/manager/codemirror/lib/codemirror.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}cartoserver/manager/codemirror/mode/javascript/javascript.js"></script>
+    <script type="text/javascript">
+
+    $(function () {
+        var jsonEditor = CodeMirror.fromTextArea(document.getElementById('config-json'), {
+             mode: "javascript",
+             lineNumbers: true
+        });
+        jsonEditor.setValue('{{config_json|escapejs}}');
+        var requireLogin = false;
+        window.loadWebMap = function(response){
+            if(response.error){
+                if(response.error.code == 403){
+                    requireLogin = true;
+                    $('#form-agol-login').removeClass("hide");
+                    //https://www.arcgis.com/sharing/generateToken
+                }
+                else {
+                    $("#lbl-error").text(response.error.message);
+                }
+            }
+            else{
+                jsonEditor.setValue(JSON.stringify(response, null, 4));
+                $("#modal-agol").modal('hide');
+                requireLogin = false;
+                $("#lbl-error").addClass("hide")
+            }
+        }
+        function getItemData(webMapId,token){
+            var url = "http://www.arcgis.com/sharing/rest/content/items/"+webMapId+"/data?f=json&callback=loadWebMap";
+            if (token) url += "&token=" + token;
+            $.getScript( url ).done(function( s, Status ) {
+            }).fail(function( jqxhr, settings, exception ) {
+                alert( "Something went wrong "+ exception );
+            });
+        }
+        $("#btn-load-webmap").click(function(){
+            $("#lbl-error").empty()
+            var webMapId = $("#txt-agol-webmapid").val();
+            if(requireLogin){
+                var referer = window.location.protocol + "//" + window.location.hostname
+                $.post("https://www.arcgis.com/sharing/generateToken", {
+                    username: $("#txt-agol-username").val(),
+                    password: $("#txt-agol-password").val(),
+                    request: "getToken",
+                    expiration: 60,
+                    referer: referer,
+                    f: "json"
+                }, function(responseText) {
+                    var response = JSON.parse(responseText);
+                    if(response.error){
+                        $("#lbl-error").text(response.error.message);
+                    }
+                    else if (response.token){
+                        getItemData(webMapId,response.token)
+                    }
+                });
+            }
+            else{
+                getItemData(webMapId);
+            }
+
+        })
+    });
+    </script>
+{% endblock extra_script %}
+{% block extra_head %}
+    <link href="{{ STATIC_URL }}cartoserver/manager/codemirror/lib/codemirror.css" rel="stylesheet"/>
+{% endblock extra_head %}
