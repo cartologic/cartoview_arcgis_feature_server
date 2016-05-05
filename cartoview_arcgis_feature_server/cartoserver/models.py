@@ -20,7 +20,8 @@ from django.utils.safestring import mark_safe
 from .fields import ColorField
 from django.template.loader import render_to_string
 from django.core.files.storage import FileSystemStorage
-
+from .postgis import get_model_field_name
+            
 class DatedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -744,13 +745,12 @@ class Connector(object):
                 field_type = geometry_types[str(table['type']).upper()]
                 field_params['srid'] = table['srid']
             field_type_cls = getattr(models_cls, field_type)
-            from .postgis import get_model_field_name
             field_name = get_model_field_name(column_name)
             # print  field_name
             model_attrs.update({field_name: field_type_cls(**field_params)})
         
         self.model_name_index += 1
-        model_name = "%s_%d" % (self.db, self.model_name_index)
+        model_name = "%s_%s" % (self.db, get_model_field_name(table_name))
         # print model_name
         
         try:
