@@ -249,21 +249,33 @@ FEATURE_DEFAULTS = dict(
 
 POINT_DRAWING_INFO_DEFAULTS = json.dumps({
     "renderer": {
-        "type": "simple",
-        "symbol": {
-            "type": "esriSMS",
-            "style": "esriSMSCircle",
-            "color": [0, 0, 0, 200],
-            "size": 5,
-            "angle": 0,
-            "xoffset": 0,
-            "yoffset": 0,
-            "outline": {
-                "color": [0, 0, 0, 255],
-                "width": 1
-            }
-        }
-    }
+		"type": "simple",
+		"symbol": {
+			"color": [
+				77,
+				77,
+				77,
+				255
+			],
+			"size": 6,
+			"angle": 0,
+			"xoffset": 0,
+			"yoffset": 0,
+			"type": "esriSMS",
+			"style": "esriSMSCircle",
+			"outline": {
+				"color": [
+					255,
+					255,
+					255,
+					255
+				],
+				"width": 0.75,
+				"type": "esriSLS",
+				"style": "esriSLSSolid"
+			}
+		}
+	}
 }, indent=4)
 LINE_DRAWING_INFO_DEFAULTS = json.dumps({
     "renderer": {
