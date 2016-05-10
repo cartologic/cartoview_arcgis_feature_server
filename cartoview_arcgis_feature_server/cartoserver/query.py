@@ -34,7 +34,9 @@ class GeoDjangoGeometrySerializer(object):
     @staticmethod
     def esriGeometryPolygon(geometry):
         try:
-            rings = geometry.coords[0] if geometry.geom_type == 'MultiPolygon' else geometry.coords
+            rings = geometry.coords
+            if geometry.geom_type == 'MultiPolygon':
+                rings = [coord[0] for coord in geometry.coords]
             return {'rings': rings}
         except:
             return None
