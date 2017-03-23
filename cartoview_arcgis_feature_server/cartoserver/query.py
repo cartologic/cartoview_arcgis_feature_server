@@ -68,25 +68,29 @@ class GeoDjangoQuery:
         # add spatial query to filters
         query_obj.geom = GeoDjangoQuery._get_query_geometry(query_obj)
         qs = GeoDjangoQuery._build_spatial_query(layer, query_obj, qs)
-
-
+        outSR = int(query_obj.outsr or layer.srid)
+        if outSR == 102100:
+            outSR = 3857
         if query_obj.returncountonly:
             result = GeoDjangoQuery._get_count(qs)
         elif query_obj.returnidsonly == True:
             result = GeoDjangoQuery._get_ids(layer,qs)
         else:
-            qs = qs[0:layer.max_records]
-            outSR = int(query_obj.outsr or layer.srid)
-            if outSR != layer.srid and query_obj.returngeometry:
-                qs = qs.transform(outSR if outSR != 102100 else 900913)
 
-            if layer.enable_geometry_simplify and layer.geometry_type in ["esriGeometryPolyline", "esriGeometryPolygon"]:
-                if query_obj.geom is not None:
-                    bbox = query_obj.geom.extent
-                else:
-                    bbox = qs.extent()
-                tolerance = min(abs(bbox[0]-bbox[2]), abs(bbox[1]-bbox[3])) * layer.tolerance_factor
-                qs = GeoDjangoQuery.simplify(qs, tolerance)
+            if query_obj.returngeometry:
+                tolerance = 0
+                if layer.enable_geometry_simplify and layer.geometry_type in ["esriGeometryPolyline", "esriGeometryPolygon"]:
+                    if query_obj.geom is not None:
+                        bbox = query_obj.geom.extent
+                    else:
+                        bbox = qs.extent()
+                    tolerance = min(abs(bbox[0]-bbox[2]), abs(bbox[1]-bbox[3])) * layer.tolerance_factor
+                qs = qs.simplify(tolerance, srid=outSR)
+
+
+                # qs = qs.transform()
+
+
 
             outFields = query_obj.outfields or layer.id_field_name or layer.display_field_name
             if outFields == "*":
@@ -95,23 +99,10 @@ class GeoDjangoQuery:
                 outFields = outFields.split(",")
 
             # return qs, outFields, outSR
-
+            qs = qs[0:layer.max_records]
             result = GeoDjangoQuery._get_list(layer, qs, query_obj.geom, outFields, query_obj.returngeometry, outSR)
         return result
 
-    @staticmethod
-    def simplify(qs, tolerance):
-        if isinstance(connections[qs.db], PostgisDatabaseWrapper):
-            field_name = None
-            tmp, geo_field = qs._spatial_setup('transform', field_name=field_name)
-            # Getting the selection SQL for the given geographic field.
-            field_col = qs._geocol_select(geo_field, field_name)
-            geo_col = qs.query.custom_select.get(geo_field, field_col)
-            custom_sel = 'ST_Simplify(%s, %f, true)' % (geo_col, tolerance)
-            qs.query.custom_select[geo_field] = custom_sel
-            return qs._clone()
-        else:
-            return qs
 
     @staticmethod
     def _build_spatial_query(layer, query_obj, qs):
@@ -162,7 +153,7 @@ class GeoDjangoQuery:
         if geom and query_obj.insr:
             geom.srid = int(query_obj.insr)
             if geom.srid == 102100:
-                geom.srid = 900913
+                geom.srid = 3857
         return geom
 
 
@@ -193,6 +184,7 @@ class GeoDjangoQuery:
         @return: DynamicObject
         """
         features = []
+        print query_set.query
         for item in query_set:
             feature = {}
             if returnGeometry:

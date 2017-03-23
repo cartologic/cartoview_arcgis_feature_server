@@ -1,7 +1,7 @@
 __author__ = 'Ahmed Nour Eldeen'
 
 from django.db import models
-from uuidfield import UUIDField
+import uuid
 import datetime
 from django.conf import settings
 from django.contrib.gis.db import models as gis_models
@@ -9,7 +9,7 @@ from django.contrib.gis.db import models as gis_models
 
 
 class Item(models.Model):
-    id = UUIDField(primary_key=True, auto=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(app_label)s_%(class)s')
     # resource = models.ForeignKey(Resource, related_name='%(app_label)s_%(class)s')
     created = models.DateTimeField(auto_now_add=True) # changed by kamal to auto assign the creation time

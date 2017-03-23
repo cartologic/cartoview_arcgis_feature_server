@@ -25,7 +25,7 @@
               <tbody>
                 {% for item in items %}
                   <tr>
-                    <td>{{ item.geonode_layermapping.first.geonode_layer.title }}</td>
+                    <td>{{ item.geonode_layer.title }}</td>
                     <td>{{ item.geometry_type }}</td>
                     <td>{{ item.srid }}</td>
                     <td>{{ item.num_features }}</td>

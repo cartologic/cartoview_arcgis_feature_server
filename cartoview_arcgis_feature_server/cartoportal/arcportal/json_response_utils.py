@@ -17,7 +17,7 @@ class JsonResponse(HttpResponse):
     def __init__(self, content, mimetype=None, status=None, content_type='application/json', cors=True):
         super(JsonResponse, self).__init__(
             content=content if type(content) is str else json.dumps(content),
-            mimetype=mimetype,
+            # mimetype=mimetype,
             status=status,
             content_type=content_type,
         )

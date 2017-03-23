@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from . import *
-from .models import Map, LayerMapping
+from .models import Map
 from arcportal.models import Item, ItemData
 import json
 from django.contrib.auth.decorators import login_required

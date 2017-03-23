@@ -1,26 +1,18 @@
-from django.contrib.gis.db import models
-from django.contrib.contenttypes.models import ContentType
+import os
 from .utils import DynamicObject
 from django.utils.text import capfirst
 from django.utils import six
 from .constants import *
-import json
 from django.core.urlresolvers import reverse
 from django.utils.text import slugify
-from django.contrib.auth.models import User
-import os
-import sys
 from collections import OrderedDict
 from django.contrib.gis.db import models
-from django.db import connections, DEFAULT_DB_ALIAS, transaction
-from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
-# add libs folder to path
-from django.utils.safestring import mark_safe
-from .fields import ColorField
-from django.template.loader import render_to_string
 from django.core.files.storage import FileSystemStorage
 from .postgis import get_model_field_name
+from geonode.layers.models import Layer
+from django.db import connections
+
 
 class DatedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -28,142 +20,6 @@ class DatedModel(models.Model):
 
     class Meta:
         abstract = True
-
-
-class Datastore(DatedModel):
-    engine = 'django.contrib.gis.db.backends.postgis'
-    name = models.CharField(max_length=100)
-    user = models.CharField(max_length=100, default='', blank=True)
-    password = models.CharField(max_length=100, default='', blank=True)
-    host = models.CharField(max_length=100, default='loacalhost')
-    port = models.IntegerField()
-    is_default = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = (('name', 'user', 'host', 'port'),)
-
-    @property
-    def connection_config(self):
-        return dict(
-            ENGINE=self.engine,
-            NAME=self.name,
-            USER=self.user,
-            PASSWORD=self.password,
-            HOST=self.host,
-            PORT=self.port,
-            IS_DEFAULT=self.is_default
-        )
-
-    def get_connection_name(self):
-        return str('dynamic_%d' % self.pk)
-
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if self.is_default:
-            try:
-                temp = Datastore.objects.get(is_default=True)
-                if self != temp:
-                    temp.is_default = False
-                    temp.save()
-            except Datastore.DoesNotExist:
-                pass
-        if Datastore.objects.count() == 0:
-            self.is_default = True
-        super(Datastore, self).save(force_insert, force_update, using, update_fields)
-        update_geo_table()
-
-    @staticmethod
-    def get_by_connection_name(connection_name):
-        try:
-            pk = int(connection_name.split("_")[1])
-            return Datastore.objects.get(pk=pk)
-        except:
-            return None
-
-    @staticmethod
-    def update_database_connections():
-        for item in Datastore.objects.all():
-            alias = item.get_connection_name()
-            if not alias in connections.databases:
-                connections.databases[alias] = item.connection_config
-
-
-class GeoTable(DatedModel):
-    table_name = models.CharField(null=True, blank=True, max_length=100)
-    title = models.CharField(null=True, blank=True, max_length=100)
-    description = models.TextField(null=True, blank=True)
-    content_type = models.ForeignKey(ContentType, related_name='%(app_label)s_%(class)s', )
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(app_label)s_%(class)s', null=True, blank=True)
-    is_public = models.BooleanField(default=True, help_text="Check to make the data available for other users")
-    datastore = models.ForeignKey(Datastore, related_name='%(app_label)s_%(class)s', null=True)
-
-    def __init__(self, *args, **kwargs):
-        self._srid = None
-        self._geometry_type = None
-        self._geometry_field_name = None
-        self._fields_defs = []
-
-        super(GeoTable, self).__init__(*args, **kwargs)
-
-    def __unicode__(self):
-        return self.title
-
-    def delete(self, using=None):
-        table_name = self.table_name
-        content_type = self.content_type
-        super(GeoTable, self).delete(using=using)
-        content_type.delete()
-        sql = "DROP TABLE %s;" % table_name
-        from .postgis import execute
-        execute(sql, 'cartoserver')
-
-    def _init_table_properties(self):
-        for f in self.datasource._meta.fields:
-            if issubclass(f.__class__, models.GeometryField):
-                self._srid = f.srid
-                self._geometry_type = f.geom_type
-                self._geometry_field_name = f.attname
-            else:
-                alias = six.text_type(capfirst(f.verbose_name))
-                field_def = dict(
-                    name=f.attname,
-                    alias=alias,
-                    # editable=f.editable if f.attname != self.id_field_name else False,
-                    nullable=f.null,
-                    type=get_esri_type(f),
-                    length=getattr(f, 'max_length', None)
-                )
-                self._fields_defs.append(field_def)
-
-    @property
-    def datasource(self):
-        return self.content_type.model_class()
-
-    @property
-    def geometry_field_name(self):
-        if self._geometry_field_name is None:
-            self._init_table_properties()
-        return self._geometry_field_name
-
-    @property
-    def geometry_type(self):
-        if self._geometry_type is None:
-            self._init_table_properties()
-        return self._geometry_type
-
-    @property
-    def num_features(self):
-        return self.datasource.objects.all().count()
-
-    @property
-    def srid(self):
-        if self._srid is None:
-            self._init_table_properties()
-        return self._srid
-
-    @property
-    def layers(self):
-        return FeatureLayer.objects.filter(content_type=self.content_type)
-
 
 def get_esri_type(django_field):
     """
@@ -178,9 +34,10 @@ def get_esri_type(django_field):
 
 class FeatureLayer(DatedModel):
     name = models.CharField(max_length=200)
-    content_type = models.ForeignKey(ContentType, related_name='%(app_label)s_%(class)s', verbose_name='Data Source',
-                                     help_text="Please choose the datasource for your layer")
-    service_name = models.CharField(max_length=200, editable=False, unique=True)
+    geonode_layer = models.OneToOneField(Layer, null=True, related_name="%(app_label)s_%(class)s")
+    # content_type = models.ForeignKey(ContentType, related_name='%(app_label)s_%(class)s', verbose_name='Data Source',
+    #                                  help_text="Please choose the datasource for your layer")
+    # service_name = models.CharField(max_length=200, editable=False, unique=True)
     description = models.TextField(blank=True)
     copyright_text = models.TextField(verbose_name="Copyright Text", blank=True)
     max_records = models.IntegerField(default=1000, verbose_name='Maximum Number of Records Returned',
@@ -219,15 +76,34 @@ class FeatureLayer(DatedModel):
 
         super(FeatureLayer, self).__init__(*args, **kwargs)
 
+    @staticmethod
+    def get_layer(geonode_layer):
+        model = ModelsManager("datastore").get_model(geonode_layer.name)
+        if model is None:
+            return None
+        featurelayer, created = FeatureLayer.objects.get_or_create(geonode_layer=geonode_layer)
+        if created:
+            featurelayer.name = featurelayer.geonode_layer.title
+            featurelayer.description = featurelayer.geonode_layer.abstract
+            featurelayer.drawing_info = DRAWING_INFO_DEFAULTS[featurelayer.geometry_type]
+            featurelayer.save()
+        return featurelayer
+
+    @property
+    def service_name(self):
+        return self.geonode_layer.name
+
     @property
     def datasource(self):
-        return self.content_type.model_class()
+        return ModelsManager("datastore").get_model(self.geonode_layer.name)
 
     @property
     def initial_queryset(self):
         """
         @return: a queryset which contain all features
         """
+        # if self.datasource is None:
+
         if self.initial_query is not None and self.initial_query != '':
             try:
                 return self.datasource.objects.extra(where=[self.initial_query])
@@ -384,19 +260,23 @@ class FeatureLayer(DatedModel):
             self.drawing_info = DRAWING_INFO_DEFAULTS[self.geometry_type]
         self.save()
 
-    @property
-    def geo_table(self):
-        try:
-            return GeoTable.objects.get(content_type=self.content_type)
-        except:
-            return None
+    # @property
+    # def geo_table(self):
+    #     try:
+    #         return GeoTable.objects.get(content_type=self.content_type)
+    #     except:
+    #         return None
 
 
 current_folder = os.path.dirname(__file__)
 upload_storage = FileSystemStorage(location=current_folder, base_url='/attachment')
+
+
+def attachment_upload(instance, filename):
+    return 'attachments/%s/%s/%s' % (instance.feature_layer.pk, instance.feature_id, filename)
+
 class Attachment(DatedModel):
-    def attachment_upload(instance, filename):
-        return 'attachments/%s/%s/%s' % (instance.feature_layer.pk, instance.feature_id, filename)
+
 
     feature_layer = models.ForeignKey(FeatureLayer)
     feature_id = models.CharField(max_length=300)
@@ -405,208 +285,51 @@ class Attachment(DatedModel):
     content_type = models.CharField(max_length=200)
 
 
-class TileService(DatedModel):
-    name = models.CharField(max_length=200, unique=True)
-    slug = models.CharField(max_length=200, editable=False)
-    description = models.TextField(blank=True)
-    copyright_text = models.TextField(verbose_name="Copyright Text", blank=True)
-    background_color = ColorField(null=True, blank=True,
-                                  help_text='HTML color code for the background-color of the generated tiles (for instance #000000), Empty value means transparent background ')
 
-    class Meta:
-        verbose_name = "Tile Service"
-        verbose_name_plural = "Tile Services"
 
-    def __init__(self, *args, **kwargs):
-        super(TileService, self).__init__(*args, **kwargs)
-        self._mapfile = None
-        if self.pk is not None:  # and not os.path.exists(self.mapfile): #TODO uncomment to cash the file
-            self.update_mapfile()
+from django.contrib.gis.db.models.query import GeoQuerySet
+from django.db.models.manager import Manager
 
-    @property
-    def meta_page_url(self):
-        return "%stiles/%s/tiles/{z}/{x}/{y}.png" % (reverse(MANAGER_HOME_URL_NAME), self.slug,)
-
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        # try:
-        #     from django.contrib.gis.utils import add_srs_entry
-        #     add_srs_entry(self.srid)
-        # except:
-        #     pass
-        super(TileService, self).save(force_insert, force_update, using, update_fields)
-        if self.pk is not None:
-            self.update_mapfile()
-
-    def update_mapfile(self):
-        xml = render_to_string(APP_NAME + '/tiles/style.xml', {'service': self})
-        f = open(self.mapfile, 'w+')
-        f.write(xml)
-        f.close()
-
-    @property
-    def mapfile(self):
-        if self._mapfile is None:
-            current_folder = os.path.dirname(__file__)
-            self._mapfile = os.path.abspath(os.path.join(current_folder, 'tiles', 'styles_xml', str(self.pk) + ".xml"))
-        return self._mapfile
-
-    def srid(self):
-        return 900913
-
-    def proj4text(self):
+class CustomGeoQuerySet(GeoQuerySet):
+    def _transform(self, srid=None):
+        args, geo_field = self._spatial_setup('transform')
+        if not srid:
+            return args['geo_col']
         try:
-            connection_name = self.layers.first().datasource.objects._db
-        except:
-            datastore = Datastore.objects.get(is_default=True)
-            connection_name = datastore.get_connection_name()
-        sql = "SELECT proj4text FROM spatial_ref_sys where srid=%d;" % self.srid()
-        result = Connector(connection_name).get_result(sql)
-        proj4text = result[0]['proj4text']
-        return proj4text
-        # return "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs";
-        # connection_name = DEFAULT_DB_ALIAS
-        # try:
-        #     datastore = Datastore.objects.get(is_default=True)
-        #     connection_name = datastore.get_connection_name()
-        # except:
-        #     pass
-        # SpatialRefSys = connections[connection_name].ops.spatial_ref_sys()
-        # sr = SpatialRefSys.objects.get(srid=self.srid)
-        # return sr.proj4text
+            # Django 1.8
+            self.query.add_context('transformed_srid', srid)
+        except AttributeError:
+            # Django<=1.7
+            self.query.transformed_srid = srid
+        return '%s(%s, %s)' % (args['function'], args['geo_col'], srid)
 
-    def center(self):
-        return "0,0,2"
+    def _simplify(self, colname, tolerance=0.0):
+        # connection.ops does not have simplify available for PostGIS.
+        return ('ST_Simplify(%s, %s)' % (colname, tolerance)
+                if tolerance else colname)
 
-    def extent(self):
-        return "-180,-85.05112877980659,180,85.05112877980659"
+    def simplify(self, tolerance=0.0, srid=None, format=None, precision=8):
+        """Returns a GeoQuerySet with simplified geometries serialized to
+        a supported geometry format.
+        """
+        # Transform first, then simplify.
+        transform = self._transform(srid)
+        print transform
+        simplify = self._simplify(transform, tolerance)
 
-    def max_extent(self):
-        return "-20037508.34,-20037508.34,20037508.34,20037508.34"
+        return self.extra(select={self._geo_field().name: simplify})
 
-    def minzoom(self):
-        return 0
+class GeoManager(Manager.from_queryset(CustomGeoQuerySet)):
+    "Overrides Manager to return Geographic QuerySets."
 
-    def maxzoom(self):
-        return 22
+    # This manager should be used for queries on related fields
+    # so that geometry columns on Oracle and MySQL are selected
+    # properly.
+    use_for_related_fields = True
 
-    # def background_color(self):
-    #     return "#b8dee6"
-
-    def __unicode__(self):
-        return self.name
-
-    @property
-    def service_url(self):
-        return "%stiles/%s/tiles/{z}/{x}/{y}.png" % (reverse(MANAGER_HOME_URL_NAME), self.slug,)
-
-
-class TilesLayer(DatedModel):
-    name = models.CharField(max_length=200)
-    content_type = models.ForeignKey(ContentType, verbose_name='Data Source', related_name=APP_NAME + "_layers",
-                                     help_text="Please choose the datasource for your layer")
-    service = models.ForeignKey(TileService, related_name="layers")
-    style = models.TextField(blank=True, null=True)
-    filter = models.TextField(blank=True, null=True)
-    order = models.IntegerField(blank=True, null=True, default=0)
-
-    class Meta:
-        ordering = ['order']
-
-    def __init__(self, *args, **kwargs):
-        self._geometry_field_name = None
-        self._srid = None
-        self._geometry_type = None
-        self._fields_names = []
-        self._fields_defs = []
-        self._field_aliases = {}
-
-        super(TilesLayer, self).__init__(*args, **kwargs)
-
-    # def delete(self, using=None):
-    #     service = self.service
-    #     super(Layer, self).delete()
-    #     if service.layers.count() == 0:
-    #         service.delete()
-
-    def slug(self):
-        return slugify(self.name)
-
-    @property
-    def datasource(self):
-        return self.content_type.model_class()
-
-    def table_name(self):
-        table_name = self.datasource._meta.db_table
-        if self.filter is not None and self.filter != "":
-            table_name = mark_safe("(select * from %s where %s) as temp_table" % (table_name, self.filter))
-        return table_name
-
-    def extent(self):
-        extent = self.datasource.objects.all().extent()
-        return ",".join(map(str, extent))
-
-    def db(self):
-        return settings.DATABASES[self.datasource.objects.db]
-
-    @property
-    def id_field(self):
-        return self.datasource._meta.pk
-
-    @property
-    def id_field_name(self):
-        return self.datasource._meta.pk.name
-
-    def proj4text(self):
-        connection_name = self.datasource.objects._db
-        sql = "SELECT proj4text FROM spatial_ref_sys where srid=%d;" % self.srid
-        result = Connector(connection_name).get_result(sql)
-        proj4text = result[0]['proj4text']
-        return proj4text
-        # "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs"
-        # connection_name = DEFAULT_DB_ALIAS
-        # try:
-        #     datastore = Datastore.objects.get(is_default=True)
-        #     connection_name = datastore.get_connection_name()
-        # except:
-        #     pass
-        # SpatialRefSys = connections[connection_name].ops.spatial_ref_sys()
-        # sr = SpatialRefSys.objects.get(srid=self.srid)
-        # return sr.proj4text
-
-    def _init_layer_properties(self):
-        for f in self.datasource._meta.fields:
-            if issubclass(f.__class__, models.GeometryField):
-                self._geometry_field_name = f.attname
-                self._srid = f.srid
-                self._geometry_type = f.geom_type
-
-    @property
-    def geometry_field_name(self):
-        if not self._geometry_field_name:
-            self._init_layer_properties()
-        return self._geometry_field_name
-
-    @property
-    def srid(self):
-        if not self._srid:
-            self._init_layer_properties()
-        return self._srid
-
-    @property
-    def geometry_type(self):
-        if not self._geometry_type:
-            self._init_layer_properties()
-        return self._geometry_type
-
-    def __unicode__(self):
-        return self.name
-
-
-class GeoManager(models.GeoManager):
     def __init__(self, db):
         super(GeoManager, self).__init__()
         self._db = db
-
 
 
 class BaseModel(models.Model):
@@ -632,15 +355,18 @@ geometry_types = {
 }
 
 
-class Connector(object):
+class ModelsManager(object):
     model_name_index = 0
+    _models = {}
     def __init__(self, db='default'):
         self.db = db
+        if db not in ModelsManager._models:
+            ModelsManager._models[db] = {}
         self.connection = connections[self.db]
         self.cursor = self.connection.cursor()
 
-    def get_result(self, sql):
-        self.cursor.execute(sql)
+    def get_result(self, sql, params=None):
+        self.cursor.execute(sql, params)
         desc = self.cursor.description
         return [
             dict(zip([col[0] for col in desc], row))
@@ -648,7 +374,10 @@ class Connector(object):
             ]
 
     def get_geo_tables(self):
-        return self.get_result("SELECT * FROM geometry_columns WHERE f_table_schema='public'")
+        try:
+            return self.get_result("SELECT * FROM geometry_columns WHERE f_table_schema='public'")
+        except:
+            return []
 
     def get_table_fields(self, table_name):
         return self.get_result(
@@ -699,11 +428,14 @@ class Connector(object):
 
         return field_type, field_params, field_notes
 
-    def create_model(self, table):
-
+    def create_model(self, table_name):
         """
         Create specified model
         """
+        query_result =  self.get_result("SELECT * FROM geometry_columns WHERE f_table_schema='public' and f_table_name=%s", (table_name,))
+        if len(query_result) == 0:
+            return None
+        table = query_result[0]
         table_name = str(table["f_table_name"])
         print 'cartoserver: creating model for %s.%s...' %(self.db, table_name)
         try:
@@ -751,60 +483,49 @@ class Connector(object):
         
         self.model_name_index += 1
         model_name = "%s_%s" % (self.db, str(get_model_field_name(unicode(table["f_table_name"]))))
-        # print model_name
-        
-        try:
-            model = type(model_name, (BaseModel,), model_attrs)
-            content_type, created = ContentType.objects.get_or_create(app_label=APP_NAME, name=model_name, model=model_name)
-            # print content_type.id
-            if getattr(settings, "USE_MANAGED_GEO_SERVICES", False):
-                datastore = Datastore.get_by_connection_name(self.db)
-                geotable, created = GeoTable.objects.get_or_create(datastore=datastore, table_name=table_name,
-                                                                   content_type=content_type)
-                if created:
-                    geotable.title = geotable.table_name
-                    geotable.save()
-                    # table_name=name, title=title, description=description, content_type=content_type,
-                    #         is_public=is_public, owner=request.user, datastore=datastore
-            print "---------------------------------------"
-            return content_type
-        except Exception as ex:
-            print ex.args
-            return None
+        model = type(model_name, (BaseModel,), model_attrs)
+        return model
 
-    def create_models(self, table_name=None):
-        geo_tables_content_types = {}
-        ret_content_type = None
-        for table in self.get_geo_tables():
-            content_type = self.create_model(table)
-            if content_type is not None:
-                geo_tables_content_types[str(table["f_table_name"])] = content_type
-                if table_name is not None and str(table["f_table_name"]) == table_name.lower():
-                    ret_content_type = content_type
-            else:
-                print 'cannot create model for table %s from %s database' % (str(table["f_table_name"]), self.db)
-        Connector.geo_content_types[self.db] = geo_tables_content_types
-        return ret_content_type
+    def get_model(self, table_name):
+        if table_name not in ModelsManager._models[self.db]:
+            model = self.create_model(table_name)
+            if model is None:
+                return model
+            ModelsManager._models[self.db][table_name] = model
+        return ModelsManager._models[self.db][table_name]
 
-    geo_content_types = {}
 
-    @staticmethod
-    def update_models():
-        Connector.geo_content_types = {}
-        for db in connections.databases:
-            # try:
-            Connector(db).create_models()
-            # except:
-                # print "cannot generate geo models for %s database" % db
+    # def create_models(self, table_name=None):
+    #     geo_tables_content_types = {}
+    #     ret_content_type = None
+    #     for table in self.get_geo_tables():
+    #         content_type = self.create_model(table)
+    #         if content_type is not None:
+    #             geo_tables_content_types[str(table["f_table_name"])] = content_type
+    #             if table_name is not None and str(table["f_table_name"]) == table_name.lower():
+    #                 ret_content_type = content_type
+    #         else:
+    #             print 'cannot create model for table %s from %s database' % (str(table["f_table_name"]), self.db)
+    #     Connector.geo_content_types[self.db] = geo_tables_content_types
+    #     return ret_content_type
+
+
+
+    # @staticmethod
+    # def update_models():
+    #     Connector.geo_content_types = {}
+    #     for db in connections.databases:
+    #         # try:
+    #         Connector(db).create_models()
+    #         # except:
+    #             # print "cannot generate geo models for %s database" % db
 
 
 # load all databases
-def update_geo_table():
-    try:
-        Datastore.update_database_connections()
-        Connector.update_models()
-    except:
-        pass
-
-
-update_geo_table()
+# def update_geo_table():
+#     # try:
+#     Datastore.update_database_connections()
+#     Connector.update_models()
+#     # except:
+#     #     pass
+# update_geo_table()

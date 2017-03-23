@@ -37,14 +37,6 @@ WFS_TYPES_TO_ESRI = dict(
     # esriFieldTypeXML="esriFieldTypeXML"
 )
 
-GEOMETRY_TYPES = dict(
-    point="esriGeometryPoint",
-    multipoint="esriGeometryMultiPoint",
-    linestring="esriGeometryPolyline",
-    multilinestring="esriGeometryMultiLine",
-    polygon="esriGeometryPolygon",
-    multipolygon="esriGeometryMultiPolygon",
-)
 
 SPATIAL_REF_DEFAULTS = {
     "wkid": 4326,
