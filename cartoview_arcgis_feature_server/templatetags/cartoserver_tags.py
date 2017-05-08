@@ -1,6 +1,7 @@
 from django import template
 from .. import *
-from ..views import get_context, layers_provider
+from ..views import get_context
+from ..cartoserver.views import get_layer_for_metadata_edit
 
 
 register = template.Library()
@@ -11,7 +12,7 @@ def layer_list_actions(context):
     request = context['request']
     layer = context["item"]
     try:
-        layers_provider.get_layer_for_metadata_edit(layer.service_name,request)
+        get_layer_for_metadata_edit(request, layer.service_name)
         can_edit = True
     except:
         can_edit = False

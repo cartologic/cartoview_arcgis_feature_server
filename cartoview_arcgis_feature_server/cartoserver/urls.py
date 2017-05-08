@@ -47,12 +47,12 @@ partial_patterns = patterns('',
     # ... more partials ...,
 )
 from tastypie.api import Api
-from .rest import GeoTableResource, FeatureLayerResource, DatastoreResource, TilesLayerResource, TilesServiceResource
+from .rest import  FeatureLayerResource
 # from .manager.datastores.rest import DatastoreResource
 rest_api = Api()
-rest_api.register(GeoTableResource())
+# rest_api.register(GeoTableResource())
 rest_api.register(FeatureLayerResource())
-rest_api.register(DatastoreResource())
+# rest_api.register(DatastoreResource())
 # rest_api.register(TilesLayerResource())
 # rest_api.register(TilesServiceResource())
 # from .manager.datastores.rest import PostGISDataStoreResource

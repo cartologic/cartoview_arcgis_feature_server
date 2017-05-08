@@ -1,14 +1,14 @@
 __author__ = 'Ahmed Nour Eldeen'
 
 from django.db import models
-from uuidfield import UUIDField
+import uuid
 import datetime
 from django.conf import settings
 from ..models import Item
 
 
 class Group(models.Model):
-    id = UUIDField(primary_key=True, auto=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=50, null=False, blank=False)
     isInvitationOnly = models.BooleanField(default=False, null=False, blank=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(app_label)s_%(class)s')

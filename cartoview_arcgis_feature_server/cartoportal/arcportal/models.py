@@ -3,7 +3,7 @@ __author__ = 'Ahmed Nour Eldeen'
 from token_manager.models import *
 from content.models import *
 from community.models import *
-
+import uuid
 """
 This File to contain common models and sub-packages models
 """
@@ -12,7 +12,7 @@ This File to contain common models and sub-packages models
 # TODO: use ItemBase model as a base model for items and groups (this model is not used yet).
 
 class ItemBase(models.Model):
-    id = UUIDField(primary_key=True, auto=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(app_label)s_%(class)s')
     # resource = models.ForeignKey(Resource, related_name='%(app_label)s_%(class)s')
     created = models.DateTimeField(null=False, blank=False, default= datetime.datetime.today())
@@ -28,4 +28,3 @@ class ItemBase(models.Model):
     class Meta:
         app_label = 'arcportal'
         abstract = True
-

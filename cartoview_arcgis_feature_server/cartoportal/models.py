@@ -11,7 +11,7 @@ from . import *
 from django.template.defaultfilters import slugify
 from django.conf import settings
 from geonode.maps.models import MapLayer
-from cartoview_arcgis_feature_server.models import LayerMapping
+from cartoview_arcgis_feature_server.cartoserver.models import FeatureLayer
 
 
 class Map(models.Model):
@@ -61,7 +61,7 @@ class Map(models.Model):
         # }]
 
         for layer_obj in self.geonode_map.layer_set.all().exclude(group="background"):
-            featurelayer = LayerMapping.objects.get(geonode_layer__typename=layer_obj.name).cartoserver_featurelayer
+            featurelayer = FeatureLayer.objects.get(geonode_layer__typename=layer_obj.name)
             fields = []
             for f in featurelayer.fields_defs:
                 fields.append({
@@ -143,13 +143,12 @@ def post_delete_map(sender, instance, *args, **kwargs):
 
 
 def map_map(geonode_map, created=True):
-    try:
-        m, m_created = Map.objects.get_or_create(geonode_map=geonode_map)
-        m.save()
-        if not created and not m.edited:
-            m.publish()
-    except:
-        pass
+
+    m, m_created = Map.objects.get_or_create(geonode_map=geonode_map)
+    m.save()
+    if not created and not m.edited:
+        m.publish()
+
 
 @receiver(post_save, sender=GeonodeMap)
 def post_save_map(sender, instance, created, *args, **kwargs):

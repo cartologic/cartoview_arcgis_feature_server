@@ -4,19 +4,18 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
-from ..models import FeatureLayer, GeoTable
+from ..models import FeatureLayer
 from ..utils import get_context, DynamicObject
 from ..constants import *
 from ..views import response_to_json
 from ..postgis import file2pgtable, get_model_field_name
-from ..models import Datastore, Connector
 
 
 @login_required
 def home(request):
     # GeoTable.objects.all().delete()
     context = get_context({
-        "items": GeoTable.objects.all()
+        # "items": GeoTable.objects.all()
     })
     return render(request, MANAGER_HOME_TPL, context)
 
@@ -25,7 +24,7 @@ def home(request):
 def add_geotable(request):
     # GeoTable.objects.all().delete()
     context = get_context({
-        "items": GeoTable.objects.all()
+        # "items": GeoTable.objects.all()
     })
     return render(request, MANAGER_GEOTABLES_ADD_TPL, context)
 
