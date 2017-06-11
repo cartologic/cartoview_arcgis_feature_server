@@ -15,7 +15,8 @@ from cartoview_arcgis_feature_server.cartoserver.models import FeatureLayer
 
 
 class Map(models.Model):
-    geonode_map = models.ForeignKey(GeonodeMap, related_name='portal_%(class)s')
+    geonode_map = models.ForeignKey(
+        GeonodeMap, related_name='portal_%(class)s')
     portal_item = models.ForeignKey(Item, null=True)
     edited = models.BooleanField(default=False)
 
@@ -33,7 +34,8 @@ class Map(models.Model):
         item_obj.title = self.geonode_map.title
         item_obj.url = None
         item_obj.type = "Web Map"
-        item_obj.type_keywords = ",".join(["ArcGIS Online", "Explorer Web Map", "Map", "Online Map", "Web Map"])
+        item_obj.type_keywords = ",".join(
+            ["ArcGIS Online", "Explorer Web Map", "Map", "Online Map", "Web Map"])
         item_obj.description = self.geonode_map.title
         item_obj.tags = ",".join(['map', ])  # todo: get tags from geonode
         item_obj.snippet = 'snippet'  # todo
@@ -61,42 +63,46 @@ class Map(models.Model):
         # }]
 
         for layer_obj in self.geonode_map.layer_set.all().exclude(group="background"):
-            featurelayer = FeatureLayer.objects.get(geonode_layer__typename=layer_obj.name)
-            fields = []
-            for f in featurelayer.fields_defs:
-                fields.append({
-                    "fieldName": f["name"],
-                    "label": f["alias"],
-                    "isEditable": f["editable"],
-                    "tooltip": "",
-                    "visible": True,
-                    "format": None,
-                    "stringFieldOption": "textbox"  # TODO chanege according to field type
-                })
-            layer_params_obj = json.loads(layer_obj.layer_params)
-            title = layer_params_obj.get("title", layer_obj.layer_title)
-            op_layers.append({
-                "id": "layer_%d" % layer_obj.id,
-                "layerType": "ArcGISFeatureLayer",
-                "url": site_url + featurelayer.meta_page_url,
-                "visibility": True,
-                "opacity": 0,
-                "mode": 1,
-                "title": title,
-                "popupInfo": {
+            try:
+
+                featurelayer = FeatureLayer.objects.get(
+                    geonode_layer__typename=layer_obj.name)
+                fields = []
+                for f in featurelayer.fields_defs:
+                    fields.append({
+                        "fieldName": f["name"],
+                        "label": f["alias"],
+                        "isEditable": f["editable"],
+                        "tooltip": "",
+                        "visible": True,
+                        "format": None,
+                        "stringFieldOption": "textbox"  # TODO chanege according to field type
+                    })
+                layer_params_obj = json.loads(layer_obj.layer_params)
+                title = layer_params_obj.get("title", layer_obj.layer_title)
+                op_layers.append({
+                    "id": "layer_%d" % layer_obj.id,
+                    "layerType": "ArcGISFeatureLayer",
+                    "url": site_url + featurelayer.meta_page_url,
+                    "visibility": True,
+                    "opacity": 0,
+                    "mode": 1,
                     "title": title,
-                    "fieldInfos": fields,
-                    "description": None,
-                    "showAttachments": True,
-                    "mediaInfos": []
-                }
-            })
-            wms_layers.append({
-                "name": layer_obj.name,
-                "title": title
+                    "popupInfo": {
+                        "title": title,
+                        "fieldInfos": fields,
+                        "description": None,
+                        "showAttachments": True,
+                        "mediaInfos": []
+                    }
+                })
+                wms_layers.append({
+                    "name": layer_obj.name,
+                    "title": title
 
-            })
-
+                })
+            except:
+                pass
         op_layers.insert(0, {
             "id": "wms",
             "title": "WMS",
@@ -112,8 +118,10 @@ class Map(models.Model):
             "spatialReferences": [3857, 2154, 23030, 23031, 23032, 27561, 27562, 27563, 27564, 27571, 27572, 27573,
                                   27574, 3035, 3942, 3948, 4171, 4258, 4326, 900913],
             "extent": [
-                [float(self.geonode_map.bbox_x0), float(self.geonode_map.bbox_y0)],
-                [float(self.geonode_map.bbox_x1), float(self.geonode_map.bbox_y1)]
+                [float(self.geonode_map.bbox_x0),
+                 float(self.geonode_map.bbox_y0)],
+                [float(self.geonode_map.bbox_x1),
+                 float(self.geonode_map.bbox_y1)]
             ],
             "copyright": ""
         })
@@ -134,6 +142,7 @@ def post_delete_geonode_map(sender, instance, *args, **kwargs):
     except:
         pass
 
+
 @receiver(post_delete, sender=Map)
 def post_delete_map(sender, instance, *args, **kwargs):
     try:
@@ -143,16 +152,20 @@ def post_delete_map(sender, instance, *args, **kwargs):
 
 
 def map_map(geonode_map, created=True):
+    try:
 
-    m, m_created = Map.objects.get_or_create(geonode_map=geonode_map)
-    m.save()
-    if not created and not m.edited:
-        m.publish()
+        m, m_created = Map.objects.get_or_create(geonode_map=geonode_map)
+        m.save()
+        if not created and not m.edited:
+            m.publish()
+    except:
+        pass
 
 
 @receiver(post_save, sender=GeonodeMap)
 def post_save_map(sender, instance, created, *args, **kwargs):
     map_map(instance, created)
+
 
 def map_all():
     maps = GeonodeMap.objects.all()
