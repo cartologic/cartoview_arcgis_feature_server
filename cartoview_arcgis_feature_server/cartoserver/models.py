@@ -351,7 +351,8 @@ geometry_types = {
     'LINESTRING': 'LineStringField',
     'POLYGON': 'PolygonField',
     'POINT': 'PointField',
-    'GEOMETRYCOLLECTION': 'GeometryCollectionField'
+    'GEOMETRYCOLLECTION': 'GeometryCollectionField',
+    'GEOMETRY': 'GeometryField'
 }
 
 
@@ -480,7 +481,7 @@ class ModelsManager(object):
             field_name = get_model_field_name(column_name)
             # print  field_name
             model_attrs.update({field_name: field_type_cls(**field_params)})
-        
+
         self.model_name_index += 1
         model_name = "%s_%s" % (self.db, str(get_model_field_name(unicode(table["f_table_name"]))))
         model = type(model_name, (BaseModel,), model_attrs)
