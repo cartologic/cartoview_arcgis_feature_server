@@ -1,9 +1,9 @@
-__author__ = 'Ahmed Nour Eldeen'
-from .. import *
-from django.conf.urls import patterns, url
+from django.conf.urls import url
+
 import views
 
+from .. import *
 
-url_patterns = patterns('',
+url_patterns = [
     url(r'^$', views.search, name=SEARCH_URL_NAME)
-)
+]

@@ -1,17 +1,22 @@
 import os
-from .utils import DynamicObject
-from django.utils.text import capfirst
-from django.utils import six
-from .constants import *
-from django.core.urlresolvers import reverse
-from django.utils.text import slugify
 from collections import OrderedDict
-from django.contrib.gis.db import models
+
 from django.conf import settings
+from django.contrib.gis.db import models
+from django.contrib.gis.db.models import Extent
+from django.contrib.gis.db.models.query import GeoQuerySet
 from django.core.files.storage import FileSystemStorage
-from .postgis import get_model_field_name
-from geonode.layers.models import Layer
+from django.core.urlresolvers import reverse
 from django.db import connections
+from django.db.models.manager import Manager
+from django.utils import six
+from django.utils.text import capfirst, slugify
+
+from geonode.layers.models import Layer
+
+from .constants import *
+from .postgis import get_model_field_name
+from .utils import DynamicObject
 
 
 class DatedModel(models.Model):
@@ -20,6 +25,7 @@ class DatedModel(models.Model):
 
     class Meta:
         abstract = True
+
 
 def get_esri_type(django_field):
     """
@@ -34,12 +40,14 @@ def get_esri_type(django_field):
 
 class FeatureLayer(DatedModel):
     name = models.CharField(max_length=200)
-    geonode_layer = models.OneToOneField(Layer, null=True, related_name="%(app_label)s_%(class)s")
+    geonode_layer = models.OneToOneField(
+        Layer, null=True, related_name="%(app_label)s_%(class)s")
     # content_type = models.ForeignKey(ContentType, related_name='%(app_label)s_%(class)s', verbose_name='Data Source',
     #                                  help_text="Please choose the datasource for your layer")
     # service_name = models.CharField(max_length=200, editable=False, unique=True)
     description = models.TextField(blank=True)
-    copyright_text = models.TextField(verbose_name="Copyright Text", blank=True)
+    copyright_text = models.TextField(
+        verbose_name="Copyright Text", blank=True)
     max_records = models.IntegerField(default=1000, verbose_name='Maximum Number of Records Returned',
                                       help_text="The maximum number of results that can be returned at once from query, identify and find operations.")
     included_fields_names = models.CharField(max_length=1000, null=True, blank=True, default="*",
@@ -53,7 +61,8 @@ class FeatureLayer(DatedModel):
     popup = models.TextField(null=True, blank=True)
     initial_query = models.TextField(blank=True, null=True,
                                      help_text="Specify the filter that is initially applied to data.")
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(app_label)s_%(class)s', null=True, blank=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='%(app_label)s_%(class)s', null=True, blank=True)
     has_attachments = models.BooleanField(default=True)
     enable_geometry_simplify = models.BooleanField(default=True, help_text="""by set this as True, the returned geometry
      in query requested will be simplified to reduce the number of coordinates which lead to reduce the response size.""")
@@ -81,7 +90,8 @@ class FeatureLayer(DatedModel):
         model = ModelsManager("datastore").get_model(geonode_layer.name)
         if model is None:
             return None
-        featurelayer, created = FeatureLayer.objects.get_or_create(geonode_layer=geonode_layer)
+        featurelayer, created = FeatureLayer.objects.get_or_create(
+            geonode_layer=geonode_layer)
         if created:
             featurelayer.name = featurelayer.geonode_layer.title
             featurelayer.description = featurelayer.geonode_layer.abstract
@@ -269,26 +279,23 @@ class FeatureLayer(DatedModel):
 
 
 current_folder = os.path.dirname(__file__)
-upload_storage = FileSystemStorage(location=current_folder, base_url='/attachment')
+upload_storage = FileSystemStorage(
+    location=current_folder, base_url='/attachment')
 
 
 def attachment_upload(instance, filename):
     return 'attachments/%s/%s/%s' % (instance.feature_layer.pk, instance.feature_id, filename)
 
-class Attachment(DatedModel):
 
+class Attachment(DatedModel):
 
     feature_layer = models.ForeignKey(FeatureLayer)
     feature_id = models.CharField(max_length=300)
-    attachment = models.FileField(upload_to=attachment_upload, storage=upload_storage)
+    attachment = models.FileField(
+        upload_to=attachment_upload, storage=upload_storage)
     name = models.CharField(max_length=300)
     content_type = models.CharField(max_length=200)
 
-
-
-
-from django.contrib.gis.db.models.query import GeoQuerySet
-from django.db.models.manager import Manager
 
 class CustomGeoQuerySet(GeoQuerySet):
     def _transform(self, srid=None):
@@ -319,6 +326,11 @@ class CustomGeoQuerySet(GeoQuerySet):
 
         return self.extra(select={self._geo_field().name: simplify})
 
+    def extent(self):
+        return self.aggregate(Extent('%s' % (self._geo_field().name))).get(
+                '%s__extent' % (self._geo_field().name))
+
+
 class GeoManager(Manager.from_queryset(CustomGeoQuerySet)):
     "Overrides Manager to return Geographic QuerySets."
 
@@ -343,7 +355,8 @@ class BaseModel(models.Model):
                                     update_fields=update_fields)
 
 
-models_cls = __import__('django.contrib.gis.db.models', globals(), locals(), 'models')
+models_cls = __import__('django.contrib.gis.db.models',
+                        globals(), locals(), 'models')
 geometry_types = {
     'MULTIPOLYGON': 'MultiPolygonField',
     'MULTIPOINT': 'MultiPointField',
@@ -359,6 +372,7 @@ geometry_types = {
 class ModelsManager(object):
     model_name_index = 0
     _models = {}
+
     def __init__(self, db='default'):
         self.db = db
         if db not in ModelsManager._models:
@@ -372,7 +386,7 @@ class ModelsManager(object):
         return [
             dict(zip([col[0] for col in desc], row))
             for row in self.cursor.fetchall()
-            ]
+        ]
 
     def get_geo_tables(self):
         try:
@@ -397,7 +411,8 @@ class ModelsManager(object):
             if row[1] == 1700:  # numric
                 field_type = "FloatField"
             else:
-                field_type = connection.introspection.get_field_type(row[1], row)
+                field_type = connection.introspection.get_field_type(
+                    row[1], row)
         except KeyError:
             field_type = 'TextField'
             field_notes.append('This field type is a guess.')
@@ -433,14 +448,17 @@ class ModelsManager(object):
         """
         Create specified model
         """
-        query_result =  self.get_result("SELECT * FROM geometry_columns WHERE f_table_schema='public' and f_table_name=%s", (table_name,))
+        query_result = self.get_result(
+            "SELECT * FROM geometry_columns WHERE f_table_schema='public' and f_table_name=%s", (table_name,))
         if len(query_result) == 0:
             return None
         table = query_result[0]
         table_name = str(table["f_table_name"])
-        print 'cartoserver: creating model for %s.%s...' %(self.db, table_name)
+        print 'cartoserver: creating model for %s.%s...' % (
+            self.db, table_name)
         try:
-            indexes = self.connection.introspection.get_indexes(self.cursor, table_name)
+            indexes = self.connection.introspection.get_indexes(
+                self.cursor, table_name)
         except NotImplementedError:
             indexes = {}
 
@@ -455,7 +473,8 @@ class ModelsManager(object):
             'objects': GeoManager(self.db)
         }
         for i, row in enumerate(self.connection.introspection.get_table_description(self.cursor, table_name)):
-            field_type, field_params, field_notes = self.get_field_type(self.connection, table_name, row)
+            field_type, field_params, field_notes = self.get_field_type(
+                self.connection, table_name, row)
             column_name = row[0]
             # field_params['field_name'] = column_name
             # field_params['field_type'] = field_type
@@ -468,7 +487,7 @@ class ModelsManager(object):
                     field_params['primary_key'] = True
                     # I assumed that the primary key is auto increment TODO: check for this
                     field_type = 'AutoField'
-                    print  'AutoField: ', column_name
+                    print 'AutoField: ', column_name
                 elif indexes[column_name]['unique']:
                     field_params['unique'] = True
                 else:
@@ -483,7 +502,8 @@ class ModelsManager(object):
             model_attrs.update({field_name: field_type_cls(**field_params)})
 
         self.model_name_index += 1
-        model_name = "%s_%s" % (self.db, str(get_model_field_name(unicode(table["f_table_name"]))))
+        model_name = "%s_%s" % (self.db, str(
+            get_model_field_name(unicode(table["f_table_name"]))))
         model = type(model_name, (BaseModel,), model_attrs)
         return model
 
@@ -494,7 +514,6 @@ class ModelsManager(object):
                 return model
             ModelsManager._models[self.db][table_name] = model
         return ModelsManager._models[self.db][table_name]
-
 
     # def create_models(self, table_name=None):
     #     geo_tables_content_types = {}
@@ -509,8 +528,6 @@ class ModelsManager(object):
     #             print 'cannot create model for table %s from %s database' % (str(table["f_table_name"]), self.db)
     #     Connector.geo_content_types[self.db] = geo_tables_content_types
     #     return ret_content_type
-
-
 
     # @staticmethod
     # def update_models():
