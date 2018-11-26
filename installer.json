@@ -1,0 +1,27 @@
+{
+
+	"title": "Cartoserver",
+	"description": "Cartoview ArcGIS Feature Server implements ArcGIS Geoservices REST API and serves your GIS data stored in geonode as an ESRI ArcGIS featureservice.",
+	"author": "Cartologic",
+	"home_page": "http://cartologic.com/cartoview/apps/cartoserver",
+	"help_url": "http://cartologic.com/cartoview/apps/cartoserver/help/",
+	"tags": ["Feature Server"],
+	"licence": "BSD",
+	"author_website": "http://www.cartologic.com",
+	"single_instance": true,
+	"apps": [{
+			"name": "cartoserver",
+			"makemigrations": true,
+			"migrate": true
+		}, {
+			"name": "arcportal",
+			"makemigrations": true,
+			"migrate": true
+		},
+		{
+			"name": "cartoportal",
+			"makemigrations": true,
+			"migrate": true
+		}
+	]
+}

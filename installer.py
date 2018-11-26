@@ -16,15 +16,15 @@ info = {
 
 
 def install():
-    import os, sys
-    current_folder = os.path.dirname(__file__)
-    sys.path.append(os.path.join(current_folder, 'libs'))
-    from django.conf import settings
-    settings.INSTALLED_APPS += ('cartoview.apps.cartoview_arcgis_feature_server.cartoserver',)
-    from django.db.models.loading import load_app
-    load_app('cartoview.apps.cartoview_arcgis_feature_server.cartoserver')
+    # import os, sys
+    # current_folder = os.path.dirname(__file__)
+    # sys.path.append(os.path.join(current_folder, 'libs'))
+    # from django.conf import settings
+    # settings.INSTALLED_APPS += ('cartoview.apps.cartoview_arcgis_feature_server.cartoserver',)
+    # from django.db.models.loading import load_app
+    # load_app('cartoview.apps.cartoview_arcgis_feature_server.cartoserver')
 
 
 def uninstall():
-    ContentType.objects.filter(app_label="cartoserver").delete()
-    ContentType.objects.filter(app_label="cartoview_arcgis_feature_server").delete()
+    # ContentType.objects.filter(app_label="cartoserver").delete()
+    # ContentType.objects.filter(app_label="cartoview_arcgis_feature_server").delete()
