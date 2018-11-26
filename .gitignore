@@ -58,3 +58,4 @@ target/
 
 # cartoview app libs folder
 libs/
+migrations/
